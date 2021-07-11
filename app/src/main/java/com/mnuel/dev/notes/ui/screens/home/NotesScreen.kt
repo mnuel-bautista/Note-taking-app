@@ -11,11 +11,11 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.outlined.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.FirstBaseline
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
@@ -30,7 +30,22 @@ sealed class HomeScreenEvent {
     object CreateNoteEvent : HomeScreenEvent()
     object SearchEvent : HomeScreenEvent()
     class EditNoteEvent(val noteId: Int) : HomeScreenEvent()
+    class SelectNoteEvent(val noteId: Int): HomeScreenEvent()
 }
+
+data class ContextMenuItem(
+    val icon: ImageVector,
+    val description: String
+)
+
+private val contextMenuItems = listOf(
+    ContextMenuItem(Icons.Outlined.ContentCopy, "Copy"),
+    ContextMenuItem(Icons.Outlined.Share, "Share"),
+    ContextMenuItem(Icons.Outlined.Edit, "Edit"),
+    ContextMenuItem(Icons.Outlined.Favorite, "Favorite"),
+    ContextMenuItem(Icons.Outlined.PushPin, "Pin"),
+    ContextMenuItem(Icons.Outlined.Delete, "Delete"),
+)
 
 /**
  * @param onNavigation Callback for when the navigation icon is clicked.
@@ -48,18 +63,19 @@ fun NotesScreen(
     val scaffoldState = rememberScaffoldState()
     val state = rememberModalBottomSheetState(ModalBottomSheetValue.Hidden)
     val scope = rememberCoroutineScope()
+
     ModalBottomSheetLayout(sheetContent = {
-        LazyColumn {
-            items(50) {
-                ListItem(
-                    text = { Text("Item $it") },
-                    icon = {
-                        Icon(
-                            Icons.Default.Favorite,
-                            contentDescription = "Localized description"
-                        )
-                    }
-                )
+        Column {
+            contextMenuItems.forEach {
+                Surface {
+                    ListItem(
+                        modifier = Modifier.clickable {  },
+                        icon = {
+                            Icon(imageVector = it.icon, contentDescription = it.description)
+                        },
+                        text = { Text(it.description) }
+                    )
+                }
             }
         }
     }, sheetState = state) {

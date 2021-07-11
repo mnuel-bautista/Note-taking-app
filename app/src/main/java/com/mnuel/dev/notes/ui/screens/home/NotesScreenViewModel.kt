@@ -40,6 +40,10 @@ class NotesScreenViewModel @Inject constructor(
 
     private val collectionId = savedStateHandle.get<Int>("collectionId")
 
+    private val mState = MutableStateFlow(NoteScreenState())
+
+    private val state: StateFlow<NoteScreenState> = MutableStateFlow(NoteScreenState())
+
 
     init {
 
@@ -77,5 +81,11 @@ class NotesScreenViewModel @Inject constructor(
         }
         return mFavoriteNotes
     }
+
+}
+
+class NoteScreenState(
+    val selection: Note? = null,
+) {
 
 }
