@@ -22,7 +22,7 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.mnuel.dev.notes.model.room.entities.Note
-import com.mnuel.dev.notes.ui.screens.home.HomeScreenEvent.CreateNoteEvent
+import com.mnuel.dev.notes.ui.screens.home.HomeScreenEvent.*
 import com.mnuel.dev.notes.ui.theme.noteColors
 import kotlinx.coroutines.launch
 
@@ -30,21 +30,28 @@ sealed class HomeScreenEvent {
     object CreateNoteEvent : HomeScreenEvent()
     object SearchEvent : HomeScreenEvent()
     class EditNoteEvent(val noteId: Int) : HomeScreenEvent()
-    class SelectNoteEvent(val noteId: Int): HomeScreenEvent()
+    class SelectNoteEvent(val noteId: Int) : HomeScreenEvent()
+    object CopyNote : HomeScreenEvent()
+    object ShareNote : HomeScreenEvent()
+    object EditNote : HomeScreenEvent()
+    object PinNote : HomeScreenEvent()
+    object DeleteNote : HomeScreenEvent()
+    object AddFavorite : HomeScreenEvent()
 }
 
 data class ContextMenuItem(
     val icon: ImageVector,
-    val description: String
+    val description: String,
+    val event: HomeScreenEvent,
 )
 
 private val contextMenuItems = listOf(
-    ContextMenuItem(Icons.Outlined.ContentCopy, "Copy"),
-    ContextMenuItem(Icons.Outlined.Share, "Share"),
-    ContextMenuItem(Icons.Outlined.Edit, "Edit"),
-    ContextMenuItem(Icons.Outlined.Favorite, "Favorite"),
-    ContextMenuItem(Icons.Outlined.PushPin, "Pin"),
-    ContextMenuItem(Icons.Outlined.Delete, "Delete"),
+    ContextMenuItem(Icons.Outlined.ContentCopy, "Copy", CopyNote),
+    ContextMenuItem(Icons.Outlined.Share, "Share", ShareNote),
+    ContextMenuItem(Icons.Outlined.Edit, "Edit", EditNote),
+    ContextMenuItem(Icons.Outlined.Favorite, "Favorite", AddFavorite),
+    ContextMenuItem(Icons.Outlined.PushPin, "Pin", PinNote),
+    ContextMenuItem(Icons.Outlined.Delete, "Delete", DeleteNote),
 )
 
 /**
@@ -69,7 +76,10 @@ fun NotesScreen(
             contextMenuItems.forEach {
                 Surface {
                     ListItem(
-                        modifier = Modifier.clickable {  },
+                        modifier = Modifier.clickable {
+                            onEvent(it.event)
+                            scope.launch { state.hide() }
+                        },
                         icon = {
                             Icon(imageVector = it.icon, contentDescription = it.description)
                         },
@@ -123,8 +133,11 @@ fun NotesScreen(
                         title = it.title,
                         content = it.content,
                         color = noteColors[it.color],
-                        onClick = { onEvent(HomeScreenEvent.EditNoteEvent(it.id)) },
-                        onLongClick = { scope.launch { state.show() } }
+                        onClick = { onEvent(EditNoteEvent(it.id)) },
+                        onLongClick = {
+                            onEvent(SelectNoteEvent(it.id))
+                            scope.launch { state.show() }
+                        }
                     )
                 }
             }

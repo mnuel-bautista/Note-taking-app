@@ -4,13 +4,12 @@ import android.util.Log
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.mnuel.dev.notes.domain.usecases.GetFavoriteNotes
-import com.mnuel.dev.notes.domain.usecases.GetNotesByCategoryUseCase
-import com.mnuel.dev.notes.domain.usecases.GetNotesUseCase
+import com.mnuel.dev.notes.domain.usecases.*
 import com.mnuel.dev.notes.model.repositories.CollectionsRepository
 import com.mnuel.dev.notes.model.repositories.NotesRepository
 import com.mnuel.dev.notes.model.room.entities.Collection
 import com.mnuel.dev.notes.model.room.entities.Note
+import com.mnuel.dev.notes.ui.theme.noteColors
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -53,6 +52,7 @@ class NotesScreenViewModel @Inject constructor(
         viewModelScope.launch {
             GetNotesUseCase(repository).execute().collect {
                 mNotes.value = it
+                mState.value = mState.value.copy(notes = it)
             }
         }
         viewModelScope.launch {
@@ -82,10 +82,53 @@ class NotesScreenViewModel @Inject constructor(
         return mFavoriteNotes
     }
 
+    fun selectNote(noteId: Int) {
+        val notes = mState.value.notes
+        val note = notes.firstOrNull { it.id == noteId }
+        mState.value = mState.value.copy(selection = note)
+    }
+
+    fun copyNote() {
+        val note = mState.value.selection
+        note?.let {
+            viewModelScope.launch {
+                CopyNoteUseCase(
+                    id = note.id,
+                    title = note.title,
+                    content = note.content,
+                    isFavorite = note.isFavorite,
+                    isPinned = note.isPinned,
+                    categoryId = note.collectionId,
+                    color = note.color,
+                    repository = repository,
+                ).execute()
+            }
+        }
+    }
+
+    fun addToFavorites() {
+        val note = mState.value.selection
+        note?.let {
+            viewModelScope.launch {
+                UpdateNoteUseCase(
+                    id = note.id,
+                    title = note.title,
+                    content = note.content,
+                    isFavorite = true,
+                    isPinned = note.isPinned,
+                    categoryId = note.collectionId,
+                    color = note.color,
+                    repository = repository,
+                ).execute()
+            }
+        }
+    }
+
 }
 
-class NoteScreenState(
+data class NoteScreenState(
     val selection: Note? = null,
+    val notes: List<Note> = emptyList()
 ) {
 
 }

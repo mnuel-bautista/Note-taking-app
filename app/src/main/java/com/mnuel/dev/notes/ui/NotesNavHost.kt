@@ -55,6 +55,19 @@ fun NotesNavHost(
                         HomeScreenEvent.SearchEvent -> {
                             navController.navigate(route = Section.Search.route)
                         }
+                        is HomeScreenEvent.SelectNoteEvent -> {
+                            viewModel.selectNote(event.noteId)
+                        }
+                        HomeScreenEvent.AddFavorite -> {
+                            viewModel.addToFavorites()
+                        }
+                        HomeScreenEvent.CopyNote -> {
+                            viewModel.copyNote()
+                        }
+                        HomeScreenEvent.DeleteNote -> TODO()
+                        HomeScreenEvent.EditNote -> TODO()
+                        HomeScreenEvent.PinNote -> TODO()
+                        HomeScreenEvent.ShareNote -> TODO()
                     }
                 },
                 notes = notes,
