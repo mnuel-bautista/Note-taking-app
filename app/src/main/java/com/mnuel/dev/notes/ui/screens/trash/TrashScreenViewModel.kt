@@ -10,6 +10,7 @@ import com.mnuel.dev.notes.model.repositories.NotesRepository
 import com.mnuel.dev.notes.model.room.entities.Note
 import com.mnuel.dev.notes.ui.screens.SelectableNote
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collect
@@ -60,9 +61,17 @@ class TrashScreenViewModel @Inject constructor(
         viewModelScope.launch {
             RestoreNotesUseCase(repository, mSelectedNotes.toList())
                 .execute()
+            val restoreCount = selectCount
             selectCount = 0
             mSelectedNotes.clear()
-            mState.value = mState.value.copy(selection = mSelectedNotes, selectCount = selectCount)
+            updateUISate(
+                selection = mSelectedNotes,
+                selectCount = selectCount,
+                restoreCount = restoreCount,
+                showRecoveryMessage = true,
+            )
+            delay(2000)
+            updateUISate(showRecoveryMessage = false, restoreCount = 0)
         }
     }
 
@@ -105,13 +114,29 @@ class TrashScreenViewModel @Inject constructor(
         mState.value = mState.value.copy(selection = mSelectedNotes, selectCount = selectCount)
     }
 
+    private fun updateUISate(
+        selection: HashSet<Int> = mSelectedNotes,
+        selectCount: Int = this.selectCount,
+        restoreCount: Int = 0,
+        showRecoveryMessage: Boolean = false,
+    ) {
+        mState.value = mState.value.copy(
+            selection = selection,
+            selectCount = selectCount,
+            restoreCount = restoreCount,
+            showRecoveryMessage = showRecoveryMessage,
+        )
+    }
+
 }
 
 data class TrashScreenState(
     val notes: List<Note> = emptyList(),
     private val selection: HashSet<Int> = hashSetOf(),
     val selectCount: Int = 0,
+    val restoreCount: Int = 0,
     val showUndoMessage: Boolean = false,
+    val showRecoveryMessage: Boolean = false,
 ) {
 
     /**
