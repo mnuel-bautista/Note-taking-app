@@ -62,21 +62,21 @@ class TrashScreenViewModel @Inject constructor(
                 .execute()
             selectCount = 0
             mSelectedNotes.clear()
-            mState.value = mState.value.copy(selected = mSelectedNotes, selectCount = selectCount)
+            mState.value = mState.value.copy(selection = mSelectedNotes, selectCount = selectCount)
         }
     }
 
 
     fun selectNote(id: Int) {
         val added = mSelectedNotes.add(id)
-        if(added) selectCount++
-        mState.value = mState.value.copy(selected = mSelectedNotes, selectCount = selectCount)
+        if (added) selectCount++
+        mState.value = mState.value.copy(selection = mSelectedNotes, selectCount = selectCount)
     }
 
     fun unSelectNote(id: Int) {
         val removed = mSelectedNotes.remove(id)
-        if(removed) selectCount--
-        mState.value = mState.value.copy(selected = mSelectedNotes, selectCount = selectCount)
+        if (removed) selectCount--
+        mState.value = mState.value.copy(selection = mSelectedNotes, selectCount = selectCount)
     }
 
 
@@ -84,7 +84,7 @@ class TrashScreenViewModel @Inject constructor(
 
         if (selected) mSelectedNotes.add(id) else mSelectedNotes.remove(id)
 
-        mState.value = mState.value.copy(selected = mSelectedNotes)
+        mState.value = mState.value.copy(selection = mSelectedNotes)
         Log.d("NotesNavHost", " TrashScreen selected: $selected id: $id")
         /*with(mDeletedNotes) {
             val notes = value.toMutableList()
@@ -102,14 +102,14 @@ class TrashScreenViewModel @Inject constructor(
     private fun clearSelection() {
         selectCount = 0
         mSelectedNotes.clear()
-        mState.value = mState.value.copy(selected = mSelectedNotes, selectCount = selectCount)
+        mState.value = mState.value.copy(selection = mSelectedNotes, selectCount = selectCount)
     }
 
 }
 
 data class TrashScreenState(
     val notes: List<Note> = emptyList(),
-    private val selected: HashSet<Int> = hashSetOf(),
+    private val selection: HashSet<Int> = hashSetOf(),
     val selectCount: Int = 0,
     val showUndoMessage: Boolean = false,
 ) {
@@ -118,7 +118,21 @@ data class TrashScreenState(
      * Checks if the note is currently selected
      * */
     fun isSelected(noteId: Int): Boolean {
-        return selected.contains(noteId)
+        return selection.contains(noteId)
     }
 
+    val appBarState: TopAppBarState
+        get() {
+            return if (selectCount > 0) {
+                TopAppBarState.CONTEXTUAL
+            } else {
+                TopAppBarState.DEFAULT
+            }
+        }
+
+
+}
+
+enum class TopAppBarState {
+    DEFAULT, CONTEXTUAL
 }

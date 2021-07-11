@@ -1,9 +1,12 @@
 package com.mnuel.dev.notes.ui.screens.trash
 
+import androidx.compose.animation.*
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.Icon
@@ -11,19 +14,22 @@ import androidx.compose.material.IconButton
 import androidx.compose.material.Scaffold
 import androidx.compose.material.TopAppBar
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.ArrowBack
-import androidx.compose.material.icons.outlined.Delete
-import androidx.compose.material.icons.outlined.DeleteForever
-import androidx.compose.material.icons.outlined.Restore
+import androidx.compose.material.icons.outlined.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.mnuel.dev.notes.ui.screens.home.NoteListItem
 import com.mnuel.dev.notes.ui.theme.NotesTheme
 import com.mnuel.dev.notes.ui.theme.noteColors
 
-@OptIn(ExperimentalFoundationApi::class)
+@OptIn(ExperimentalAnimationApi::class)
 @Composable
 fun TrashScreen(
     trashScreenState: TrashScreenState,
@@ -37,27 +43,37 @@ fun TrashScreen(
         topBar = {
             TopAppBar(
                 navigationIcon = {
-                    IconButton(onClick = onNavigateUp) {
-                        Icon(imageVector = Icons.Outlined.ArrowBack, contentDescription = "")
+                    if(trashScreenState.appBarState == TopAppBarState.DEFAULT) {
+                        IconButton(onClick = onNavigateUp) {
+                            Icon(imageVector = Icons.Outlined.ArrowBack, contentDescription = "")
+                        }
+                    } else {
+                        IconButton(onClick = {}) {
+                            Icon(imageVector = Icons.Outlined.Clear, contentDescription = "")
+                        }
                     }
                 },
                 title = {},
                 actions = {
-                    if (trashScreenState.selectCount > 0) {
-                        IconButton(onClick = onRestoreNotes) {
-                            Icon(imageVector = Icons.Outlined.Restore, contentDescription = "")
-                        }
-                        IconButton(onClick = onDeleteSelected) {
-                            Icon(imageVector = Icons.Outlined.Delete, contentDescription = "")
-                        }
-                    } else {
-                        IconButton(onClick = onDeleteAllPermanently) {
-                            Icon(
-                                imageVector = Icons.Outlined.DeleteForever,
-                                contentDescription = ""
-                            )
-                        }
-                    }
+
+                    TopAppBarAction(
+                        visible = trashScreenState.appBarState == TopAppBarState.DEFAULT,
+                        icon = Icons.Outlined.DeleteForever,
+                        onClick = onDeleteAllPermanently
+                    )
+
+                    TopAppBarAction(
+                        visible = trashScreenState.appBarState == TopAppBarState.CONTEXTUAL,
+                        icon = Icons.Outlined.Restore,
+                        onClick = onRestoreNotes
+                    )
+
+                    TopAppBarAction(
+                        visible = trashScreenState.appBarState == TopAppBarState.CONTEXTUAL,
+                        icon = Icons.Outlined.Delete,
+                        onClick = onDeleteSelected
+                    )
+
                 }
             )
         }
@@ -67,7 +83,9 @@ fun TrashScreen(
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
 
-            items(trashScreenState.notes, key = { "$it - ${trashScreenState.isSelected(it.id)}" }) {
+            items(
+                trashScreenState.notes,
+                key = { "$it - ${trashScreenState.isSelected(it.id)}" }) {
                 NoteListItem(
                     title = it.title,
                     content = it.content,
@@ -89,13 +107,38 @@ fun TrashScreen(
     }
 }
 
+@OptIn(ExperimentalAnimationApi::class)
+@Composable
+fun RowScope.TopAppBarAction(
+    visible: Boolean = false,
+    icon: ImageVector,
+    onClick: () -> Unit = {},
+) {
+    AnimatedVisibility(
+        visible = visible,
+        enter = fadeIn() + expandIn(expandFrom = Alignment.Center),
+        exit = fadeOut() + shrinkOut(shrinkTowards = Alignment.Center),
+    ) {
+        IconButton(onClick = onClick) {
+            Icon(
+                imageVector = icon,
+                contentDescription = ""
+            )
+        }
+    }
+}
+
+
 @Preview
 @Composable
 fun TrashScreenPreview() {
+    var trashScreenState by remember { mutableStateOf(TrashScreenState())}
     NotesTheme {
         TrashScreen(
-            trashScreenState = TrashScreenState(),
-            onSelect = { _, _ -> },
+            trashScreenState = trashScreenState,
+            onSelect = { _, _ ->
+                trashScreenState = trashScreenState.copy()
+            },
             onNavigateUp = {},
         )
     }
