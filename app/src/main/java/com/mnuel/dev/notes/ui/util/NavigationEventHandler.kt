@@ -41,7 +41,7 @@ fun handleNoteScreenEvents(
             val noteId = uiState.selection?.id
             navController.navigate(route = "start?noteId=$noteId")
         }
-        HomeScreenEvent.PinNote -> TODO()
+        HomeScreenEvent.PinNote -> { viewModel.pinNote() }
         HomeScreenEvent.ShareNote -> {
             val text = uiState.selection?.content
             val sendIntent: Intent = Intent().apply {

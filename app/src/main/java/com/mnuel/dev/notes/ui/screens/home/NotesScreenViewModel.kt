@@ -25,7 +25,10 @@ class NotesScreenViewModel @Inject constructor(
 
     private val mNotes: MutableStateFlow<List<Note>> = MutableStateFlow(emptyList())
 
-    val notes: StateFlow<List<Note>> = mNotes
+    /**
+     * All notes, including pinned notes.
+     * */
+    private var notes: List<Note> = emptyList()
 
     private val mState = MutableStateFlow(NoteScreenState())
 
@@ -35,6 +38,7 @@ class NotesScreenViewModel @Inject constructor(
 
         viewModelScope.launch {
             GetNotesUseCase(repository).execute().collect {
+                notes = it
                 val grouped = it.groupBy { it.isPinned }
                 val pinnedNotes = grouped[true] ?: emptyList()
                 val notes = grouped[false] ?: emptyList()
@@ -56,7 +60,6 @@ class NotesScreenViewModel @Inject constructor(
 
 
     fun selectNote(noteId: Int) {
-        val notes = mState.value.notes
         val note = notes.firstOrNull { it.id == noteId }
         mState.value = mState.value.copy(selection = note)
     }
@@ -105,6 +108,18 @@ class NotesScreenViewModel @Inject constructor(
         note?.let {
             viewModelScope.launch {
                 DeleteNoteUseCase(repository, note.id).execute()
+            }
+        }
+    }
+
+    /**
+     * Pins the selected note.
+     * */
+    fun pinNote() {
+        val note = mState.value.selection
+        note?.let {
+            viewModelScope.launch {
+                PinNoteUseCase(repository, note.id).execute()
             }
         }
     }
