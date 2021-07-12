@@ -104,9 +104,8 @@ class EditScreenViewModel @Inject constructor(
                 mModificationDate.value = modificationDateFormatter.format(note.modificationDate)
             }
         } else {
-            val dateTime = OffsetDateTime.now()
-            mCreationDate.value = creationDateFormatter.format(dateTime)
-            mModificationDate.value = modificationDateFormatter.format(dateTime)
+            mCreationDate.value = ""
+            mModificationDate.value = ""
         }
 
     }

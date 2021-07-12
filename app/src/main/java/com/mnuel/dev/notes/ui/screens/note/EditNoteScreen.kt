@@ -123,7 +123,6 @@ private fun EditNoteScreenContent(
 
     var bottomBarState by remember { mutableStateOf(BottomBarState.NORMAL) }
 
-    val scope = rememberCoroutineScope()
 
     LaunchedEffect(Unit) {
 
@@ -244,19 +243,21 @@ private fun EditNoteScreenContent(
                     style = MaterialTheme.typography.h5
                 )
 
-                Row(
-                    modifier = Modifier.paddingFromBaseline(top = 24.dp),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    ProvideTextStyle(
-                        value = MaterialTheme.typography.caption.copy(
-                            color = LocalContentColor.current.copy(
-                                alpha = ContentAlpha.disabled
-                            )
-                        )
+                if(creationDate.isNotEmpty() && modificationDate.isNotEmpty()) {
+                    Row(
+                        modifier = Modifier.paddingFromBaseline(top = 24.dp),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        Text(text = "Created: $creationDate")
-                        Text(text = "Modified: $modificationDate")
+                        ProvideTextStyle(
+                            value = MaterialTheme.typography.caption.copy(
+                                color = LocalContentColor.current.copy(
+                                    alpha = ContentAlpha.disabled
+                                )
+                            )
+                        ) {
+                            Text(text = "Created: $creationDate")
+                            Text(text = "Modified: $modificationDate")
+                        }
                     }
                 }
 
