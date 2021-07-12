@@ -5,48 +5,16 @@ import com.mnuel.dev.notes.model.room.entities.Note
 import kotlinx.coroutines.flow.Flow
 import java.time.OffsetDateTime
 
-interface NotesRepository {
 
-    fun getAllNotes(): Flow<List<Note>>
-
-    fun search(query: String): Flow<List<Note>>
-
-    suspend fun getNoteById(id: Int): Note
-
-    suspend fun insert(note: Note)
-
-    suspend fun delete(id: Int)
-
-    suspend fun update(note: Note)
-
-    suspend fun restoreNotes(notesIds: List<Int>)
-
-    /**
-     * Method to only update the passed arguments of the Note instance.
-     * */
-    suspend fun update(
-        id: Int,
-        title: String,
-        content: String,
-        isFavorite: Boolean,
-        isPinned: Boolean,
-        color: Int,
-        categoryId: Int,
-        modificationDate: OffsetDateTime,
-    )
-
-    fun getDeletedNotes(): Flow<List<Note>>
-
-    suspend fun deleteAllNotesPermanently()
-
-    suspend fun deleteNotes(notesIds: List<Int>)
-
-}
-
-class NotesRepositoryImpl(private val notesDao: NoteDao) : NotesRepository {
+/**
+ * A repository to retrieve only the notes marked as favorite.
+ * */
+class FavoriteNotesRepository(
+    private val notesDao: NoteDao,
+): NotesRepository {
 
     override fun getAllNotes(): Flow<List<Note>> {
-        return notesDao.getAllNotes()
+        return notesDao.getFavoriteNotes()
     }
 
     override fun search(query: String): Flow<List<Note>> {
@@ -79,16 +47,7 @@ class NotesRepositoryImpl(private val notesDao: NoteDao) : NotesRepository {
         categoryId: Int,
         modificationDate: OffsetDateTime
     ) {
-        notesDao.update(
-            id,
-            title,
-            content,
-            isFavorite,
-            isPinned,
-            categoryId,
-            color,
-            modificationDate
-        )
+        notesDao.update(id, title, content, isFavorite, isPinned, categoryId, color, modificationDate)
     }
 
     override suspend fun restoreNotes(notesIds: List<Int>) {
@@ -100,11 +59,11 @@ class NotesRepositoryImpl(private val notesDao: NoteDao) : NotesRepository {
     }
 
     override suspend fun deleteAllNotesPermanently() {
-        notesDao.deleteAllNotesPermanently()
+        return notesDao.deleteAllNotesPermanently()
     }
 
     override suspend fun deleteNotes(notesIds: List<Int>) {
-        notesDao.deleteNotes(notesIds)
+        return notesDao.deleteNotes(notesIds)
     }
 
 }

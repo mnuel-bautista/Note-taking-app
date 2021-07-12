@@ -41,7 +41,7 @@ class NotesScreenViewModel @Inject constructor(
 
     private val mState = MutableStateFlow(NoteScreenState())
 
-    private val state: StateFlow<NoteScreenState> = MutableStateFlow(NoteScreenState())
+    val state: StateFlow<NoteScreenState> = MutableStateFlow(NoteScreenState())
 
 
     init {
@@ -60,6 +60,16 @@ class NotesScreenViewModel @Inject constructor(
         }
 
 
+    }
+
+    fun getAllNotes(): StateFlow<NoteScreenState> {
+        val uiState = MutableStateFlow(NoteScreenState())
+        viewModelScope.launch {
+            GetNotesUseCase(repository).execute().collect {
+                uiState.value = uiState.value.copy(notes = it)
+            }
+        }
+        return uiState
     }
 
     fun getNotesByCollection(collectionId: Int): StateFlow<List<Note>> {

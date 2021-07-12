@@ -10,7 +10,7 @@ class GetFavoriteNotes(
 ): BaseUseCase<Flow<List<Note>>> {
 
     override suspend fun execute(): Flow<List<Note>> {
-        return repository.getFavoriteNotes()
+        return repository.getAllNotes()
     }
 
 }

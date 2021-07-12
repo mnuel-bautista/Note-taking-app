@@ -10,6 +10,6 @@ class GetNotesByCategoryUseCase(
     private val repository: NotesRepository
 ): BaseUseCase<Flow<List<Note>>> {
     override suspend fun execute(): Flow<List<Note>> {
-        return repository.getNotesByCollection(categoryId)
+        return repository.getAllNotes()
     }
 }

@@ -1,17 +1,20 @@
 package com.mnuel.dev.notes.ui
 
+import android.content.Intent
 import android.util.Log
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.navigation.NavHostController
-import androidx.navigation.NavType
+import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
+import androidx.navigation.*
+import androidx.navigation.NavType.Companion.StringType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.navArgument
-import androidx.navigation.navigation
 import com.mnuel.dev.notes.Section
 import com.mnuel.dev.notes.ui.components.Routes
 import com.mnuel.dev.notes.ui.screens.category.SelectCategoryScreen
@@ -37,11 +40,20 @@ fun NotesNavHost(
         navController = navController,
         startDestination = Routes.HOME.name
     ) {
-        composable(route = Routes.HOME.name) {
+        composable(route = Routes.HOME.name) { entry ->
+
+            val navArgument2=NavArgument.Builder().setDefaultValue("Hello").build()
+            entry.destination.addArgument("route", navArgument2)
+
+            Log.d("NotesModule", "Hehe")
 
             val viewModel = hiltViewModel<NotesScreenViewModel>()
 
+            val context = LocalContext.current
+
             val notes by viewModel.notes.collectAsState()
+
+            val notesScreenUiState by viewModel.getAllNotes().collectAsState()
 
             NotesScreen(
                 onEvent = { event ->
@@ -67,7 +79,17 @@ fun NotesNavHost(
                         HomeScreenEvent.DeleteNote -> TODO()
                         HomeScreenEvent.EditNote -> TODO()
                         HomeScreenEvent.PinNote -> TODO()
-                        HomeScreenEvent.ShareNote -> TODO()
+                        HomeScreenEvent.ShareNote -> {
+                            val text = notesScreenUiState.selection?.content
+                            val sendIntent: Intent = Intent().apply {
+                                action = Intent.ACTION_SEND
+                                putExtra(Intent.EXTRA_TEXT, text)
+                                type = "text/plain"
+                            }
+
+                            val shareIntent = Intent.createChooser(sendIntent, null)
+                            context.startActivity(shareIntent)
+                        }
                     }
                 },
                 notes = notes,
@@ -77,8 +99,20 @@ fun NotesNavHost(
             )
         }
 
-        composable(route = Routes.FAVORITES.name) {
+        composable(route = Routes.FAVORITES.name) { entry ->
+
+            val navArgument2=NavArgument.Builder().setDefaultValue("Hello").build()
+            entry.destination.addArgument("route", navArgument2)
+            entry.savedStateHandle.set("route", entry.destination.route)
+
+
+            CompositionLocalProvider(LocalViewModelStoreOwner provides entry) {
+                val viewModel = hiltViewModel<NotesScreenViewModel>()
+            }
+
+            Log.d("NotesModule", "Hehe")
             val viewModel = hiltViewModel<NotesScreenViewModel>()
+            val s = LocalViewModelStoreOwner.current
 
             val favoriteNotes by viewModel.getFavoriteNotes().collectAsState()
 
@@ -106,10 +140,16 @@ fun NotesNavHost(
             route = "${Routes.COLLECTIONS}/{collectionId}",
             arguments = listOf(navArgument("collectionId") { type = NavType.IntType })
         ) { entry ->
+            val navArgument2=NavArgument.Builder().setDefaultValue("Hello").build()
+            entry.destination.addArgument("route", navArgument2)
+            entry.savedStateHandle.set("route", entry.destination.route)
             val viewModel = hiltViewModel<NotesScreenViewModel>()
+
 
             val collectionId = entry.arguments?.getInt("collectionId")
                 ?: throw IllegalStateException("Pass a valid collection id")
+
+
 
             val notes by viewModel.getNotesByCollection(collectionId).collectAsState()
 
