@@ -71,6 +71,7 @@ fun NotesScreen(
     val scope = rememberCoroutineScope()
 
     val notes = uiState.notes
+    val pinnedNotes = uiState.pinnedNotes
 
     ModalBottomSheetLayout(sheetContent = {
         Column {
@@ -128,8 +129,25 @@ fun NotesScreen(
                 verticalArrangement = Arrangement.spacedBy(8.dp),
                 contentPadding = PaddingValues(all = 8.dp)
             ) {
+                item {
+                    Text("Pinned notes")
+                }
+                items(pinnedNotes) {
+                    NoteListItem(
+                        title = it.title,
+                        content = it.content,
+                        color = noteColors[it.color],
+                        onClick = { onEvent(EditNoteEvent(it.id)) },
+                        onLongClick = {
+                            onEvent(SelectNoteEvent(it.id))
+                            scope.launch { state.show() }
+                        }
+                    )
+                }
+                item {
+                    Text("Notes")
+                }
                 items(notes, key = { "$it" }) {
-                    Log.d("NotesScreen", "$it")
                     NoteListItem(
                         title = it.title,
                         content = it.content,

@@ -15,7 +15,6 @@ import com.mnuel.dev.notes.Section
 import com.mnuel.dev.notes.ui.components.Routes
 import com.mnuel.dev.notes.ui.screens.category.SelectCategoryScreen
 import com.mnuel.dev.notes.ui.screens.home.NotesScreen
-import com.mnuel.dev.notes.ui.screens.home.HomeScreenEvent
 import com.mnuel.dev.notes.ui.screens.home.NotesScreenViewModel
 import com.mnuel.dev.notes.ui.screens.note.EditNoteScreen
 import com.mnuel.dev.notes.ui.screens.note.EditNoteScreenEvent

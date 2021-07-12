@@ -35,8 +35,10 @@ class NotesScreenViewModel @Inject constructor(
 
         viewModelScope.launch {
             GetNotesUseCase(repository).execute().collect {
-                mNotes.value = it
-                mState.value = mState.value.copy(notes = it)
+                val grouped = it.groupBy { it.isPinned }
+                val pinnedNotes = grouped[true] ?: emptyList()
+                val notes = grouped[false] ?: emptyList()
+                mState.value = mState.value.copy(notes = notes, pinnedNotes = pinnedNotes)
             }
         }
 
@@ -111,7 +113,8 @@ class NotesScreenViewModel @Inject constructor(
 
 data class NoteScreenState(
     val selection: Note? = null,
-    val notes: List<Note> = emptyList()
+    val notes: List<Note> = emptyList(),
+    val pinnedNotes: List<Note> = emptyList(),
 ) {
 
 }
