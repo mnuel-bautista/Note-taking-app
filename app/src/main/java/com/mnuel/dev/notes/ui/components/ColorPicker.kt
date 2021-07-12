@@ -44,9 +44,14 @@ fun ColorPicker(
                 onSelect = { onSelectColor(it) }
             )
         }
-        IconButton(onClick = onClose) {
-            Icon(imageVector = Icons.Outlined.ChevronLeft, contentDescription = null)
-        }
+        Icon(
+            modifier = Modifier
+                .clip(CircleShape)
+                .clickable { onClose() },
+            imageVector = Icons.Outlined.ChevronLeft,
+            contentDescription = null
+        )
+
     }
 }
 
