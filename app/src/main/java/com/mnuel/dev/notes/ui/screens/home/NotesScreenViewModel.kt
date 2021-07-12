@@ -1,15 +1,12 @@
 package com.mnuel.dev.notes.ui.screens.home
 
-import android.util.Log
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.mnuel.dev.notes.domain.usecases.*
 import com.mnuel.dev.notes.model.repositories.CollectionsRepository
 import com.mnuel.dev.notes.model.repositories.NotesRepository
-import com.mnuel.dev.notes.model.room.entities.Collection
 import com.mnuel.dev.notes.model.room.entities.Note
-import com.mnuel.dev.notes.ui.theme.noteColors
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -24,30 +21,17 @@ class NotesScreenViewModel @Inject constructor(
     private val collectionsRepository: CollectionsRepository
 ) : ViewModel() {
 
-    private val mNotes: MutableStateFlow<List<Note>> = MutableStateFlow(emptyList())
+    val title: String = savedStateHandle.get<String>("title") ?: "Home"
 
-    private val mDefaultCollections: MutableStateFlow<List<Collection>> =
-        MutableStateFlow(emptyList())
+    private val mNotes: MutableStateFlow<List<Note>> = MutableStateFlow(emptyList())
 
     val notes: StateFlow<List<Note>> = mNotes
 
-    val defaultCollections: StateFlow<List<Collection>> = mDefaultCollections
-
-    val title: String = savedStateHandle.get<String>("title") ?: "Home"
-
-    private val isFavorite = savedStateHandle.get<String?>("isFavorite")?.toBooleanStrictOrNull()
-
-    private val collectionId = savedStateHandle.get<Int>("collectionId")
-
     private val mState = MutableStateFlow(NoteScreenState())
 
-    val state: StateFlow<NoteScreenState> = MutableStateFlow(NoteScreenState())
-
+    val state: StateFlow<NoteScreenState> = mState
 
     init {
-
-
-        Log.d("HomeViewModel", "${savedStateHandle.keys()}")
 
         viewModelScope.launch {
             GetNotesUseCase(repository).execute().collect {
@@ -55,10 +39,6 @@ class NotesScreenViewModel @Inject constructor(
                 mState.value = mState.value.copy(notes = it)
             }
         }
-        viewModelScope.launch {
-            mDefaultCollections.value = collectionsRepository.getDefaultCollections()
-        }
-
 
     }
 
@@ -72,25 +52,6 @@ class NotesScreenViewModel @Inject constructor(
         return uiState
     }
 
-    fun getNotesByCollection(collectionId: Int): StateFlow<List<Note>> {
-        val mNotes = MutableStateFlow(emptyList<Note>())
-        viewModelScope.launch {
-            GetNotesByCategoryUseCase(collectionId, repository).execute().collect {
-                mNotes.value = it
-            }
-        }
-        return mNotes
-    }
-
-    fun getFavoriteNotes(): StateFlow<List<Note>> {
-        val mFavoriteNotes = MutableStateFlow(emptyList<Note>())
-        viewModelScope.launch {
-            GetFavoriteNotes(repository).execute().collect {
-                mFavoriteNotes.value = it
-            }
-        }
-        return mFavoriteNotes
-    }
 
     fun selectNote(noteId: Int) {
         val notes = mState.value.notes
@@ -108,7 +69,7 @@ class NotesScreenViewModel @Inject constructor(
                     content = note.content,
                     isFavorite = note.isFavorite,
                     isPinned = note.isPinned,
-                    categoryId = note.collectionId,
+                    collectionId = note.collectionId,
                     color = note.color,
                     repository = repository,
                 ).execute()
@@ -130,6 +91,18 @@ class NotesScreenViewModel @Inject constructor(
                     color = note.color,
                     repository = repository,
                 ).execute()
+            }
+        }
+    }
+
+    /**
+     * Deletes the currently selected note. If there is no selected note, then it does nothing.
+     * */
+    fun deleteSelectedNote() {
+        val note = mState.value.selection
+        note?.let {
+            viewModelScope.launch {
+                DeleteNoteUseCase(repository, note.id).execute()
             }
         }
     }

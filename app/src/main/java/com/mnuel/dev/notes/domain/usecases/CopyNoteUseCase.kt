@@ -11,7 +11,7 @@ class CopyNoteUseCase(
     private val isPinned: Boolean,
     private val isFavorite: Boolean,
     private val repository: NotesRepository,
-    private val categoryId: Int,
+    private val collectionId: Int,
     private val color: Int,
 ) : BaseUseCase<Unit> {
     override suspend fun execute() {
@@ -21,7 +21,7 @@ class CopyNoteUseCase(
             content = content,
             isFavorite = isFavorite,
             isPinned = isPinned,
-            collectionId = categoryId,
+            collectionId = collectionId,
             color = color,
         )
         val copiedNote = note.copy(id = 0)

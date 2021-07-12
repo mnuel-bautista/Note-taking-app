@@ -63,13 +63,14 @@ fun NotesScreen(
     onEvent: (HomeScreenEvent) -> Unit = {},
     onNavigation: () -> Unit,
     title: String? = null,
-    notes: List<Note>,
-    viewModel: NotesScreenViewModel,
+    uiState: NoteScreenState = NoteScreenState(),
 ) {
 
     val scaffoldState = rememberScaffoldState()
     val state = rememberModalBottomSheetState(ModalBottomSheetValue.Hidden)
     val scope = rememberCoroutineScope()
+
+    val notes = uiState.notes
 
     ModalBottomSheetLayout(sheetContent = {
         Column {
@@ -112,7 +113,7 @@ fun NotesScreen(
                         Text(text = title ?: "")
                     },
                     actions = {
-                        IconButton(onClick = { onEvent(HomeScreenEvent.SearchEvent) }) {
+                        IconButton(onClick = { onEvent(SearchEvent) }) {
                             Icon(imageVector = Icons.Outlined.Search, contentDescription = "Search")
                         }
                         IconButton(onClick = { /*TODO*/ }) {

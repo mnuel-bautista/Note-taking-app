@@ -128,13 +128,11 @@ class EditScreenViewModel @Inject constructor(
     }
 
     fun deleteNote() {
-
         if (mCurrentNoteId != NEW_NOTE) {
             viewModelScope.launch {
                 repository.delete(mCurrentNoteId)
             }
         }
-
     }
 
     fun selectColor(color: Color) {
@@ -195,7 +193,7 @@ class EditScreenViewModel @Inject constructor(
                     repository = repository,
                     isPinned = isPinned.value,
                     isFavorite = isFavorite.value,
-                    categoryId = mSelectedCategory.value.id,
+                    collectionId = mSelectedCategory.value.id,
                     color = noteColors.indexOf(mSelectedColor.value)
                 ).execute()
 
