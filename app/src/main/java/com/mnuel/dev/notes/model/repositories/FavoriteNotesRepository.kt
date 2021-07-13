@@ -25,14 +25,14 @@ class FavoriteNotesRepository(
         val order = if(asc) "ASC" else "DESC"
         when (field) {
             NotesRepository.TITLE_FIELD -> {
-                queryBuilder.orderBy(" ORDER BY title $order")
+                queryBuilder.orderBy("title $order")
             }
             NotesRepository.CREATED_FIELD -> {
 
-                queryBuilder.orderBy("ORDER BY datetime(creationDate) $order")
+                queryBuilder.orderBy("datetime(creationDate) $order")
             }
             NotesRepository.MODIFIED_FIELD -> {
-                queryBuilder.orderBy("ORDER BY datetime(modificationDate) $order")
+                queryBuilder.orderBy("datetime(modificationDate) $order")
             }
         }
 
