@@ -11,6 +11,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.*
+import androidx.compose.material.icons.rounded.PushPin
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -35,8 +36,10 @@ sealed class HomeScreenEvent {
     object ShareNote : HomeScreenEvent()
     object EditNote : HomeScreenEvent()
     object PinNote : HomeScreenEvent()
+    object UnpinNote : HomeScreenEvent()
     object DeleteNote : HomeScreenEvent()
     object AddFavorite : HomeScreenEvent()
+    object RemoveFavorite : HomeScreenEvent()
 }
 
 enum class Sort {
@@ -46,21 +49,6 @@ enum class Sort {
     SortByModifiedDateAsc,
     SortByModifiedDateDsc,
 }
-
-data class ContextMenuItem(
-    val icon: ImageVector,
-    val description: String,
-    val event: HomeScreenEvent,
-)
-
-private val contextMenuItems = listOf(
-    ContextMenuItem(Icons.Outlined.ContentCopy, "Copy", CopyNote),
-    ContextMenuItem(Icons.Outlined.Share, "Share", ShareNote),
-    ContextMenuItem(Icons.Outlined.Edit, "Edit", EditNote),
-    ContextMenuItem(Icons.Outlined.Favorite, "Favorite", AddFavorite),
-    ContextMenuItem(Icons.Outlined.PushPin, "Pin", PinNote),
-    ContextMenuItem(Icons.Outlined.Delete, "Delete", DeleteNote),
-)
 
 /**
  * @param onNavigation Callback for when the navigation icon is clicked.
@@ -79,6 +67,8 @@ fun NotesScreen(
     val scope = rememberCoroutineScope()
 
     val notes = uiState.notes
+    val selection = uiState.selection
+    val menuItems = uiState.contextMenuItems
     val pinnedNotes = uiState.pinnedNotes
     val showUndoMessage = uiState.showUndoMessage
     val isMenuExpanded = uiState.isMenuExpanded
@@ -89,10 +79,9 @@ fun NotesScreen(
         }
     }
 
-
     ModalBottomSheetLayout(sheetContent = {
         Column {
-            contextMenuItems.forEach {
+            menuItems.forEach {
                 Surface {
                     ListItem(
                         modifier = Modifier.clickable {

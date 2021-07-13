@@ -1,12 +1,15 @@
 package com.mnuel.dev.notes.ui.screens.home
 
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.*
+import androidx.compose.material.icons.rounded.PushPin
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.mnuel.dev.notes.domain.usecases.*
 import com.mnuel.dev.notes.domain.usecases.GetNotesUseCase.Companion.SORT_ALPHABETICALLY
 import com.mnuel.dev.notes.domain.usecases.GetNotesUseCase.Companion.SORT_CREATED_ASC
@@ -16,6 +19,7 @@ import com.mnuel.dev.notes.domain.usecases.GetNotesUseCase.Companion.SORT_MODIFI
 import com.mnuel.dev.notes.model.repositories.CollectionsRepository
 import com.mnuel.dev.notes.model.repositories.NotesRepository
 import com.mnuel.dev.notes.model.room.entities.Note
+import com.mnuel.dev.notes.ui.screens.home.NoteScreenState.Companion.contextMenuItems
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -24,11 +28,12 @@ import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
+
 @HiltViewModel
 class NotesScreenViewModel @Inject constructor(
     private val savedStateHandle: SavedStateHandle,
     private val repository: NotesRepository,
-    private val collectionsRepository: CollectionsRepository
+    private val collectionsRepository: CollectionsRepository,
 ) : ViewModel() {
 
     /**
@@ -83,7 +88,19 @@ class NotesScreenViewModel @Inject constructor(
 
     fun selectNote(noteId: Int) {
         val note = notes.firstOrNull { it.id == noteId }
-        mState.value = mState.value.copy(selection = note)
+        if (note != null) {
+            val items = contextMenuItems.toMutableList()
+            if (note.isFavorite) {
+                items[3] = ContextMenuItem(Icons.Outlined.Favorite, "Remove from favorites",
+                    HomeScreenEvent.RemoveFavorite)
+            }
+            if (note.isPinned) {
+                items[4] = ContextMenuItem(Icons.Rounded.PushPin, "Unpin Note",
+                    HomeScreenEvent.UnpinNote)
+            }
+
+            mState.value = mState.value.copy(selection = note, contextMenuItems = items)
+        }
     }
 
     fun copyNote() {
@@ -155,11 +172,11 @@ class NotesScreenViewModel @Inject constructor(
     }
 
     fun sortByModified(asc: Boolean = true) {
-        if(asc) sortNotes(SORT_MODIFIED_ASC) else sortNotes(SORT_MODIFIED_DSC)
+        if (asc) sortNotes(SORT_MODIFIED_ASC) else sortNotes(SORT_MODIFIED_DSC)
     }
 
     fun sortByCreated(asc: Boolean = true) {
-        if(asc) sortNotes(SORT_CREATED_ASC) else sortNotes(SORT_CREATED_DSC)
+        if (asc) sortNotes(SORT_CREATED_ASC) else sortNotes(SORT_CREATED_DSC)
     }
 
     private fun sortNotes(sortMethod: Int) {
@@ -183,6 +200,7 @@ data class NoteScreenState(
     val notes: List<Note> = emptyList(),
     val pinnedNotes: List<Note> = emptyList(),
     val showUndoMessage: Boolean = false,
+    val contextMenuItems: List<ContextMenuItem> = NoteScreenState.contextMenuItems,
 ) {
 
     var isMenuExpanded: Boolean by mutableStateOf(false)
@@ -197,4 +215,21 @@ data class NoteScreenState(
     }
 
 
+    companion object {
+        val contextMenuItems = listOf(
+            ContextMenuItem(Icons.Outlined.ContentCopy, "Copy", HomeScreenEvent.CopyNote),
+            ContextMenuItem(Icons.Outlined.Share, "Share", HomeScreenEvent.ShareNote),
+            ContextMenuItem(Icons.Outlined.Edit, "Edit", HomeScreenEvent.EditNote),
+            ContextMenuItem(Icons.Outlined.FavoriteBorder, "Favorite", HomeScreenEvent.AddFavorite),
+            ContextMenuItem(Icons.Outlined.PushPin, "Pin", HomeScreenEvent.PinNote),
+            ContextMenuItem(Icons.Outlined.Delete, "Delete", HomeScreenEvent.DeleteNote),
+        )
+    }
+
 }
+
+data class ContextMenuItem(
+    val icon: ImageVector,
+    val description: String,
+    val event: HomeScreenEvent,
+)

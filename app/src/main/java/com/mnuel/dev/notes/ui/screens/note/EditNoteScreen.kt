@@ -18,7 +18,9 @@ import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.layout.FirstBaseline
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
@@ -326,6 +328,7 @@ fun TextField(
         BasicTextField(
             modifier = modifier,
             value = value,
+            cursorBrush = SolidColor(LocalContentColor.current),
             singleLine = singleLine,
             onValueChange = onValueChange,
             textStyle = style.copy(color = LocalContentColor.current),

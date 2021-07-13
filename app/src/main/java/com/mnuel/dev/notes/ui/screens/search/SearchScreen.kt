@@ -5,9 +5,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.Icon
-import androidx.compose.material.IconButton
-import androidx.compose.material.MaterialTheme
+import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Close
 import androidx.compose.runtime.*
@@ -35,31 +33,35 @@ fun SearchScreen(
 
     val queryPlaceholder = viewModel.queryPlaceholder
 
-    Column(
-        Modifier
-            .fillMaxSize()
-            .padding(horizontal = 8.dp)
-            .padding(top = 8.dp)
-    ) {
-        SearchBar(
-            query = query,
-            placeholder = queryPlaceholder,
-            onQueryChange = { viewModel.search(it) },
-            onClose = onClose
-        )
-
-        LazyColumn(
-            contentPadding = PaddingValues(all = 8.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp),
+    Surface {
+        Column(
+            Modifier
+                .fillMaxSize()
+                .padding(horizontal = 8.dp)
+                .padding(top = 8.dp)
         ) {
-            items(notes) {
-                NoteListItem(
-                    title = it.title,
-                    content = it.content,
-                    color = noteColors[it.color] ?: MaterialTheme.colors.background,
-                    onClick = { onSelectNote(it.id) }
-                )
+
+            SearchBar(
+                query = query,
+                placeholder = queryPlaceholder,
+                onQueryChange = { viewModel.search(it) },
+                onClose = onClose
+            )
+
+            LazyColumn(
+                contentPadding = PaddingValues(all = 8.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                items(notes) {
+                    NoteListItem(
+                        title = it.title,
+                        content = it.content,
+                        color = noteColors[it.color] ?: MaterialTheme.colors.background,
+                        onClick = { onSelectNote(it.id) }
+                    )
+                }
             }
+
         }
     }
 }
@@ -78,7 +80,7 @@ private fun SearchBar(
             .clip(shape = RoundedCornerShape(4.dp))
             .border(
                 width = 1.dp,
-                color = Color.Black.copy(alpha = 0.12f),
+                color = LocalContentColor.current.copy(alpha = 0.12f),
                 shape = RoundedCornerShape(4.dp)
             ),
         verticalAlignment = Alignment.CenterVertically,
