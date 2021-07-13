@@ -5,8 +5,10 @@ import android.content.Intent
 import androidx.navigation.NavHostController
 import com.mnuel.dev.notes.Section
 import com.mnuel.dev.notes.ui.screens.home.HomeScreenEvent
+import com.mnuel.dev.notes.ui.screens.home.HomeScreenEvent.*
 import com.mnuel.dev.notes.ui.screens.home.NoteScreenState
 import com.mnuel.dev.notes.ui.screens.home.NotesScreenViewModel
+import com.mnuel.dev.notes.ui.screens.home.Sort
 
 fun handleNoteScreenEvents(
     navController: NavHostController,
@@ -16,33 +18,19 @@ fun handleNoteScreenEvents(
     event: HomeScreenEvent
 ) {
     when (event) {
-        HomeScreenEvent.CreateNoteEvent -> {
-            navController.navigate(route = Section.EditNote.route)
-        }
-        is HomeScreenEvent.EditNoteEvent -> {
-            navController.navigate(route = "${Section.EditNote.route}?noteId=${event.noteId}")
-        }
-        HomeScreenEvent.SearchEvent -> {
-            navController.navigate(route = Section.Search.route)
-        }
-        is HomeScreenEvent.SelectNoteEvent -> {
-            viewModel.selectNote(event.noteId)
-        }
-        HomeScreenEvent.AddFavorite -> {
-            viewModel.addToFavorites()
-        }
-        HomeScreenEvent.CopyNote -> {
-            viewModel.copyNote()
-        }
-        HomeScreenEvent.DeleteNote -> {
-            viewModel.deleteSelectedNote()
-        }
-        HomeScreenEvent.EditNote -> {
+        CreateNoteEvent -> navController.navigate(route = Section.EditNote.route)
+        is EditNoteEvent -> navController.navigate(route = "${Section.EditNote.route}?noteId=${event.noteId}")
+        SearchEvent -> navController.navigate(route = Section.Search.route)
+        is SelectNoteEvent -> viewModel.selectNote(event.noteId)
+        AddFavorite -> viewModel.addToFavorites()
+        CopyNote -> viewModel.copyNote()
+        DeleteNote -> viewModel.deleteSelectedNote()
+        PinNote -> viewModel.pinNote()
+        EditNote -> {
             val noteId = uiState.selection?.id
             navController.navigate(route = "start?noteId=$noteId")
         }
-        HomeScreenEvent.PinNote -> { viewModel.pinNote() }
-        HomeScreenEvent.ShareNote -> {
+        ShareNote -> {
             val text = uiState.selection?.content
             val sendIntent: Intent = Intent().apply {
                 action = Intent.ACTION_SEND
@@ -52,6 +40,15 @@ fun handleNoteScreenEvents(
 
             val shareIntent = Intent.createChooser(sendIntent, null)
             context.startActivity(shareIntent)
+        }
+        is SortEvent -> {
+            when (event.sort) {
+                Sort.SortAlphabetically -> viewModel.sortAlphabetically()
+                Sort.SortByCreationDateAsc -> viewModel.sortByCreated(asc = true)
+                Sort.SortByModifiedDateAsc -> viewModel.sortByModified(asc = true)
+                Sort.SortByCreationDateDsc -> viewModel.sortByModified(asc = false)
+                Sort.SortByModifiedDateDsc -> viewModel.sortByModified(asc = false)
+            }
         }
     }
 }

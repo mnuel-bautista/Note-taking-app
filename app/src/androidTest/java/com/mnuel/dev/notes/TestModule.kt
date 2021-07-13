@@ -38,12 +38,6 @@ class TestModule {
 
     @Singleton
     @Provides
-    fun providesNotesRepository(dao: NoteDao): NotesRepository {
-        return NotesRepositoryImpl(dao)
-    }
-
-    @Singleton
-    @Provides
     fun providesCategoriesRepository(dao: CollectionDao): CollectionsRepository {
         return CollectionsRepositoryImpl(dao)
     }

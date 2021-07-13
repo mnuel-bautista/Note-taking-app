@@ -32,15 +32,18 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.mnuel.dev.notes.R
+import com.mnuel.dev.notes.Section
 import com.mnuel.dev.notes.model.room.entities.Collection
 import com.mnuel.dev.notes.ui.components.ColorPicker
+import com.mnuel.dev.notes.ui.screens.home.NotesScreenViewModel
 import com.mnuel.dev.notes.ui.screens.note.EditNoteScreenEvent.SelectCategoryEvent
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 
-sealed class EditNoteScreenEvent() {
+sealed class EditNoteScreenEvent {
     object OnBackEvent : EditNoteScreenEvent()
     class SelectCategoryEvent(val categoryId: Int) : EditNoteScreenEvent()
+    object DeleteNoteEvent: EditNoteScreenEvent()
 }
 
 enum class BottomBarState {
@@ -54,12 +57,15 @@ fun EditNoteScreen(
     navController: NavController
 ) {
 
-
     val categoryId =
         navController.currentBackStackEntry?.savedStateHandle?.getLiveData<Int>("Selected Category")
             ?.observeAsState()
 
     val viewModel = hiltViewModel<EditScreenViewModel>()
+
+    val previousEntry = navController.previousBackStackEntry
+
+    val notesScreenViewModel = previousEntry?.let { hiltViewModel<NotesScreenViewModel>(it) }
 
     DisposableEffect(key1 = categoryId) {
         viewModel.selectCategory(categoryId?.value ?: 1)
@@ -93,7 +99,21 @@ fun EditNoteScreen(
         EditNoteScreenContent(
             selectedCategory = selectedCategory,
             viewModel = viewModel,
-            onEvent = onEvent,
+            onEvent = { event ->
+                when (event) {
+                    EditNoteScreenEvent.OnBackEvent -> {
+                        navController.popBackStack()
+                    }
+                    is SelectCategoryEvent -> {
+                        navController.navigate(route = "${Section.SelectCategory.route}/${event.categoryId}")
+                    }
+                    is EditNoteScreenEvent.DeleteNoteEvent -> {
+                        viewModel.deleteNote()
+                        notesScreenViewModel?.showUndoMessage()
+                        navController.popBackStack()
+                    }
+                }
+            }
         )
     }
 }
@@ -206,8 +226,7 @@ private fun EditNoteScreenContent(
                         context.startActivity(shareIntent)
                     },
                     onDeleteClicked = {
-                        viewModel.deleteNote()
-                        onEvent(EditNoteScreenEvent.OnBackEvent)
+                        onEvent(EditNoteScreenEvent.DeleteNoteEvent)
                     },
                     onCopyClicked = {
                         viewModel.copyNote()

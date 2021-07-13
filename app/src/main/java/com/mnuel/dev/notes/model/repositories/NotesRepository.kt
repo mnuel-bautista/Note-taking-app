@@ -1,5 +1,9 @@
 package com.mnuel.dev.notes.model.repositories
 
+import androidx.sqlite.db.SupportSQLiteQueryBuilder
+import com.mnuel.dev.notes.model.repositories.NotesRepository.Companion.CREATED_FIELD
+import com.mnuel.dev.notes.model.repositories.NotesRepository.Companion.MODIFIED_FIELD
+import com.mnuel.dev.notes.model.repositories.NotesRepository.Companion.TITLE_FIELD
 import com.mnuel.dev.notes.model.room.daos.NoteDao
 import com.mnuel.dev.notes.model.room.entities.Note
 import kotlinx.coroutines.flow.Flow
@@ -8,6 +12,11 @@ import java.time.OffsetDateTime
 interface NotesRepository {
 
     fun getAllNotes(): Flow<List<Note>>
+
+    /**
+     * @param field The field used to sort the notes.
+     * */
+    fun getAllNotesSorted(field: Int, asc: Boolean): Flow<List<Note>>
 
     fun search(query: String): Flow<List<Note>>
 
@@ -41,12 +50,43 @@ interface NotesRepository {
 
     suspend fun deleteNotes(notesIds: List<Int>)
 
+    companion object {
+
+        const val TITLE_FIELD = 1
+        const val CREATED_FIELD = 2
+        const val MODIFIED_FIELD = 3
+
+    }
+
 }
 
 class NotesRepositoryImpl(private val notesDao: NoteDao) : NotesRepository {
 
     override fun getAllNotes(): Flow<List<Note>> {
         return notesDao.getAllNotes()
+    }
+
+    override fun getAllNotesSorted(field: Int, asc: Boolean): Flow<List<Note>> {
+
+        val queryBuilder = SupportSQLiteQueryBuilder.builder("notes")
+
+        val order = if(asc) "ASC" else "DESC"
+        when (field) {
+            TITLE_FIELD -> {
+                queryBuilder.orderBy("title $order")
+            }
+            CREATED_FIELD -> {
+
+                queryBuilder.orderBy("datetime(creationDate) $order")
+            }
+            MODIFIED_FIELD -> {
+                queryBuilder.orderBy("datetime(modificationDate) $order")
+            }
+        }
+
+        val query = queryBuilder.create()
+
+        return notesDao.getAllNotes(query)
     }
 
     override fun search(query: String): Flow<List<Note>> {
@@ -106,5 +146,6 @@ class NotesRepositoryImpl(private val notesDao: NoteDao) : NotesRepository {
     override suspend fun deleteNotes(notesIds: List<Int>) {
         notesDao.deleteNotes(notesIds)
     }
+
 
 }

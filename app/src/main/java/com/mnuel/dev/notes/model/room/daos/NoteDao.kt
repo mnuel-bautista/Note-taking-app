@@ -15,7 +15,7 @@ abstract class NoteDao {
     @Query("SELECT * FROM notes INNER JOIN collections WHERE notes.collectionId = collections.id")
     abstract suspend fun getNoteWithCategory(): NoteWithCategory
 
-    @Query("SELECT * FROM notes WHERE isDeleted = 0")
+    @Query("SELECT * FROM notes WHERE isDeleted = 0 ORDER BY datetime(creationDate) DESC")
     abstract fun getAllNotes(): Flow<List<Note>>
 
     @Query("SELECT * FROM notes WHERE isFavorite = 1")

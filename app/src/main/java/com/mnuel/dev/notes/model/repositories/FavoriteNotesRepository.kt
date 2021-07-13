@@ -1,5 +1,6 @@
 package com.mnuel.dev.notes.model.repositories
 
+import androidx.sqlite.db.SupportSQLiteQueryBuilder
 import com.mnuel.dev.notes.model.room.daos.NoteDao
 import com.mnuel.dev.notes.model.room.entities.Note
 import kotlinx.coroutines.flow.Flow
@@ -15,6 +16,29 @@ class FavoriteNotesRepository(
 
     override fun getAllNotes(): Flow<List<Note>> {
         return notesDao.getFavoriteNotes()
+    }
+
+    override fun getAllNotesSorted(field: Int, asc: Boolean): Flow<List<Note>> {
+        val queryBuilder = SupportSQLiteQueryBuilder.builder("notes")
+            .selection("WHERE isFavorite = ?", arrayOf(1))
+
+        val order = if(asc) "ASC" else "DESC"
+        when (field) {
+            NotesRepository.TITLE_FIELD -> {
+                queryBuilder.orderBy(" ORDER BY title $order")
+            }
+            NotesRepository.CREATED_FIELD -> {
+
+                queryBuilder.orderBy("ORDER BY datetime(creationDate) $order")
+            }
+            NotesRepository.MODIFIED_FIELD -> {
+                queryBuilder.orderBy("ORDER BY datetime(modificationDate) $order")
+            }
+        }
+
+        val query = queryBuilder.create()
+
+        return notesDao.getAllNotes(query)
     }
 
     override fun search(query: String): Flow<List<Note>> {

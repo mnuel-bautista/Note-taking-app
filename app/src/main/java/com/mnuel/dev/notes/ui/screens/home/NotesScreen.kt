@@ -1,6 +1,5 @@
 package com.mnuel.dev.notes.ui.screens.home
 
-import android.util.Log
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -21,7 +20,7 @@ import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.mnuel.dev.notes.model.room.entities.Note
+import com.mnuel.dev.notes.ui.components.SortButton
 import com.mnuel.dev.notes.ui.screens.home.HomeScreenEvent.*
 import com.mnuel.dev.notes.ui.theme.noteColors
 import kotlinx.coroutines.launch
@@ -31,12 +30,21 @@ sealed class HomeScreenEvent {
     object SearchEvent : HomeScreenEvent()
     class EditNoteEvent(val noteId: Int) : HomeScreenEvent()
     class SelectNoteEvent(val noteId: Int) : HomeScreenEvent()
+    class SortEvent(val sort: Sort) : HomeScreenEvent()
     object CopyNote : HomeScreenEvent()
     object ShareNote : HomeScreenEvent()
     object EditNote : HomeScreenEvent()
     object PinNote : HomeScreenEvent()
     object DeleteNote : HomeScreenEvent()
     object AddFavorite : HomeScreenEvent()
+}
+
+enum class Sort {
+    SortAlphabetically,
+    SortByCreationDateAsc,
+    SortByCreationDateDsc,
+    SortByModifiedDateAsc,
+    SortByModifiedDateDsc,
 }
 
 data class ContextMenuItem(
@@ -72,6 +80,15 @@ fun NotesScreen(
 
     val notes = uiState.notes
     val pinnedNotes = uiState.pinnedNotes
+    val showUndoMessage = uiState.showUndoMessage
+    val isMenuExpanded = uiState.isMenuExpanded
+
+    LaunchedEffect(key1 = showUndoMessage) {
+        if (showUndoMessage) {
+            scaffoldState.snackbarHostState.showSnackbar("The note has been deleted")
+        }
+    }
+
 
     ModalBottomSheetLayout(sheetContent = {
         Column {
@@ -117,9 +134,12 @@ fun NotesScreen(
                         IconButton(onClick = { onEvent(SearchEvent) }) {
                             Icon(imageVector = Icons.Outlined.Search, contentDescription = "Search")
                         }
-                        IconButton(onClick = { /*TODO*/ }) {
-                            Icon(imageVector = Icons.Outlined.MoreVert, contentDescription = "More")
-                        }
+                        SortButton(
+                            isMenuExpanded,
+                            onClick = { uiState.showDropdownMenu() },
+                            onDismiss = { uiState.hideDropdownMenu() },
+                            onSort = { onEvent(it) }
+                        )
                     }
                 )
             },

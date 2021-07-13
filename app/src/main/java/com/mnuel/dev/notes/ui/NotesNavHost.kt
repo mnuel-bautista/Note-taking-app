@@ -6,11 +6,13 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.*
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.navArgument
+import com.mnuel.dev.notes.R
 import com.mnuel.dev.notes.Section
 import com.mnuel.dev.notes.ui.components.Routes
 import com.mnuel.dev.notes.ui.screens.category.SelectCategoryScreen
@@ -47,7 +49,7 @@ fun NotesNavHost(
                 onEvent = { event ->
                     handleNoteScreenEvents(navController, viewModel, uiState, context, event)
                 },
-                title = "Home",
+                title = stringResource(id =  R.string.home),
                 uiState = uiState,
                 onNavigation = onNavigationIconClick,
             )
@@ -65,6 +67,7 @@ fun NotesNavHost(
                 onEvent = { event ->
                     handleNoteScreenEvents(navController, viewModel, uiState, context, event)
                 },
+                title = stringResource(R.string.favorites_screen),
                 uiState = uiState,
                 onNavigation = onNavigationIconClick,
             )
@@ -85,6 +88,7 @@ fun NotesNavHost(
                 onEvent = { event ->
                     handleNoteScreenEvents(navController, viewModel, uiState, context, event)
                 },
+                title = viewModel.title,
                 uiState = uiState,
                 onNavigation = onNavigationIconClick,
             )

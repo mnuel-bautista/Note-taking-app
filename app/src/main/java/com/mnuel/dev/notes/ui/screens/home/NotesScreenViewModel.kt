@@ -1,13 +1,23 @@
 package com.mnuel.dev.notes.ui.screens.home
 
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.mnuel.dev.notes.domain.usecases.*
+import com.mnuel.dev.notes.domain.usecases.GetNotesUseCase.Companion.SORT_ALPHABETICALLY
+import com.mnuel.dev.notes.domain.usecases.GetNotesUseCase.Companion.SORT_CREATED_ASC
+import com.mnuel.dev.notes.domain.usecases.GetNotesUseCase.Companion.SORT_CREATED_DSC
+import com.mnuel.dev.notes.domain.usecases.GetNotesUseCase.Companion.SORT_MODIFIED_ASC
+import com.mnuel.dev.notes.domain.usecases.GetNotesUseCase.Companion.SORT_MODIFIED_DSC
 import com.mnuel.dev.notes.model.repositories.CollectionsRepository
 import com.mnuel.dev.notes.model.repositories.NotesRepository
 import com.mnuel.dev.notes.model.room.entities.Note
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collect
@@ -21,7 +31,10 @@ class NotesScreenViewModel @Inject constructor(
     private val collectionsRepository: CollectionsRepository
 ) : ViewModel() {
 
-    val title: String = savedStateHandle.get<String>("title") ?: "Home"
+    /**
+     * Title shown in the app bar for a collection.
+     * */
+    var title: String = ""
 
     private val mNotes: MutableStateFlow<List<Note>> = MutableStateFlow(emptyList())
 
@@ -34,18 +47,27 @@ class NotesScreenViewModel @Inject constructor(
 
     val state: StateFlow<NoteScreenState> = mState
 
-    init {
+    private var notesJob: Job? = null
 
-        viewModelScope.launch {
-            GetNotesUseCase(repository).execute().collect {
-                notes = it
-                val grouped = it.groupBy { it.isPinned }
-                val pinnedNotes = grouped[true] ?: emptyList()
-                val notes = grouped[false] ?: emptyList()
-                mState.value = mState.value.copy(notes = notes, pinnedNotes = pinnedNotes)
+    init {
+        notesJob = viewModelScope.launch {
+            launch {
+                GetNotesUseCase(repository).execute().collect {
+                    notes = it
+                    val grouped = it.groupBy { it.isPinned }
+                    val pinnedNotes = grouped[true] ?: emptyList()
+                    val notes = grouped[false] ?: emptyList()
+                    mState.value = mState.value.copy(notes = notes, pinnedNotes = pinnedNotes)
+                }
             }
         }
-
+        viewModelScope.launch {
+            val collectionId = savedStateHandle.get<Int>("collectionId")
+            if (collectionId != null) {
+                val collection = collectionsRepository.getCollectionById(collectionId)
+                title = collection.description
+            }
+        }
     }
 
     fun getAllNotes(): StateFlow<NoteScreenState> {
@@ -124,12 +146,55 @@ class NotesScreenViewModel @Inject constructor(
         }
     }
 
+    fun showUndoMessage() {
+        mState.value = mState.value.copy(showUndoMessage = true)
+    }
+
+    fun sortAlphabetically() {
+        sortNotes(SORT_ALPHABETICALLY)
+    }
+
+    fun sortByModified(asc: Boolean = true) {
+        if(asc) sortNotes(SORT_MODIFIED_ASC) else sortNotes(SORT_MODIFIED_DSC)
+    }
+
+    fun sortByCreated(asc: Boolean = true) {
+        if(asc) sortNotes(SORT_CREATED_ASC) else sortNotes(SORT_CREATED_DSC)
+    }
+
+    private fun sortNotes(sortMethod: Int) {
+        notesJob?.cancel()
+        notesJob = viewModelScope.launch {
+            GetNotesUseCase(repository, sortMethod)
+                .execute().collect {
+                    notes = it
+                    val grouped = it.groupBy { it.isPinned }
+                    val pinnedNotes = grouped[true] ?: emptyList()
+                    val notes = grouped[false] ?: emptyList()
+                    mState.value = mState.value.copy(notes = notes, pinnedNotes = pinnedNotes)
+                }
+        }
+    }
+
 }
 
 data class NoteScreenState(
     val selection: Note? = null,
     val notes: List<Note> = emptyList(),
     val pinnedNotes: List<Note> = emptyList(),
+    val showUndoMessage: Boolean = false,
 ) {
+
+    var isMenuExpanded: Boolean by mutableStateOf(false)
+        private set
+
+    fun showDropdownMenu() {
+        isMenuExpanded = true
+    }
+
+    fun hideDropdownMenu() {
+        isMenuExpanded = false
+    }
+
 
 }
