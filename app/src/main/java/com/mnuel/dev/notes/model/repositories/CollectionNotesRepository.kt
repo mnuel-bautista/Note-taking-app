@@ -18,7 +18,7 @@ class CollectionNotesRepository(
 
     override fun getAllNotesSorted(field: Int, asc: Boolean): Flow<List<Note>> {
         val queryBuilder = SupportSQLiteQueryBuilder.builder("notes")
-            .selection("WHERE collectionId = ?", arrayOf(collectionId))
+            .selection("collectionId = ?", arrayOf(collectionId))
 
         val order = if(asc) "ASC" else "DESC"
         when (field) {
