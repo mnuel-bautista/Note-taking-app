@@ -28,14 +28,13 @@ private val LightColorPalette = lightColors(
     */
 )
 
-val noteColors = listOf(
-    Color(0xffffffff),
-    Color(0xff9575cd),
-    Color(0xff4fc3f7),
-    Color(0xff4db6ac),
-    Color(0xffaed581),
-    Color(0xfffff176),
-    Color(0xffffb74d),
+val noteColors = mapOf(
+    0 to Color(0xff9575cd),
+    1 to Color(0xff4fc3f7),
+    2 to Color(0xff4db6ac),
+    3 to Color(0xffaed581),
+    4 to Color(0xfffff176),
+    5 to Color(0xffffb74d),
 )
 
 @Composable
@@ -53,3 +52,8 @@ fun NotesTheme(darkTheme: Boolean = isSystemInDarkTheme(), content: @Composable(
         content = content
     )
 }
+
+/**
+ * When the value of the selected color is [DEFAULT_COLOR], then the background color of the current theme will be used.
+ * */
+const val DEFAULT_COLOR: Int = -1

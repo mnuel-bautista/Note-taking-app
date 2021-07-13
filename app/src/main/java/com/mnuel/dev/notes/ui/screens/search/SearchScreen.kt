@@ -56,7 +56,7 @@ fun SearchScreen(
                 NoteListItem(
                     title = it.title,
                     content = it.content,
-                    color = noteColors[it.color],
+                    color = noteColors[it.color] ?: MaterialTheme.colors.background,
                     onClick = { onSelectNote(it.id) }
                 )
             }

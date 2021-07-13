@@ -156,7 +156,7 @@ fun NotesScreen(
                     NoteListItem(
                         title = it.title,
                         content = it.content,
-                        color = noteColors[it.color],
+                        color = noteColors[it.color] ?: MaterialTheme.colors.background,
                         onClick = { onEvent(EditNoteEvent(it.id)) },
                         onLongClick = {
                             onEvent(SelectNoteEvent(it.id))
@@ -171,7 +171,7 @@ fun NotesScreen(
                     NoteListItem(
                         title = it.title,
                         content = it.content,
-                        color = noteColors[it.color],
+                        color = noteColors[it.color] ?: MaterialTheme.colors.background,
                         onClick = { onEvent(EditNoteEvent(it.id)) },
                         onLongClick = {
                             onEvent(SelectNoteEvent(it.id))

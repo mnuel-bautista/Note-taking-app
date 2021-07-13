@@ -10,10 +10,13 @@ import com.mnuel.dev.notes.domain.usecases.UpdateNoteUseCase
 import com.mnuel.dev.notes.model.repositories.CollectionsRepository
 import com.mnuel.dev.notes.model.repositories.NotesRepository
 import com.mnuel.dev.notes.model.room.entities.Collection
+import com.mnuel.dev.notes.ui.theme.DEFAULT_COLOR
+import com.mnuel.dev.notes.ui.theme.noteColors
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
 import java.time.OffsetDateTime
 import java.time.format.DateTimeFormatter
@@ -26,17 +29,6 @@ class EditScreenViewModel @Inject constructor(
     private val repository: NotesRepository,
     private val collectionsRepository: CollectionsRepository,
 ) : ViewModel() {
-
-
-    val noteColors = listOf(
-        Color(0xffffffff),
-        Color(0xff9575cd),
-        Color(0xff4fc3f7),
-        Color(0xff4db6ac),
-        Color(0xffaed581),
-        Color(0xfffff176),
-        Color(0xffffb74d),
-    )
 
     private var mCurrentNoteId: Int = NEW_NOTE
 
@@ -61,7 +53,7 @@ class EditScreenViewModel @Inject constructor(
 
     private val mShowCopiedNoteMessage: MutableStateFlow<Boolean> = MutableStateFlow(false)
 
-    private val mSelectedColor: MutableStateFlow<Color> = MutableStateFlow(noteColors.first())
+    private val mSelectedColor: MutableStateFlow<Int> = MutableStateFlow(DEFAULT_COLOR)
 
     val title: StateFlow<String> = mTitle
 
@@ -73,7 +65,7 @@ class EditScreenViewModel @Inject constructor(
 
     val selectedCategory: StateFlow<Collection> = mSelectedCategory
 
-    val selectedColor: StateFlow<Color> = mSelectedColor
+    val selectedColor: StateFlow<Int> = mSelectedColor
 
     val categories: StateFlow<List<Collection>> = mCategories
 
@@ -89,17 +81,17 @@ class EditScreenViewModel @Inject constructor(
         val noteIdArg = savedStateHandle.get<String>("noteId")
         mCurrentNoteId = noteIdArg?.toInt() ?: NEW_NOTE
         val creationDateFormatter = DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM)
-        val modificationDateFormatter = DateTimeFormatter.ofLocalizedDateTime(FormatStyle.MEDIUM, FormatStyle.SHORT)
+        val modificationDateFormatter =
+            DateTimeFormatter.ofLocalizedDateTime(FormatStyle.MEDIUM, FormatStyle.SHORT)
 
         if (mCurrentNoteId != NEW_NOTE) {
             viewModelScope.launch {
                 val note = repository.getNoteById(mCurrentNoteId)
-
                 mTitle.value = note.title
                 mContent.value = note.content
                 mIsFavorite.value = note.isFavorite
                 mIsPinned.value = note.isPinned
-                mSelectedColor.value = noteColors[note.color]
+                mSelectedColor.value = note.color
                 mCreationDate.value = creationDateFormatter.format(note.creationDate)
                 mModificationDate.value = modificationDateFormatter.format(note.modificationDate)
             }
@@ -135,7 +127,15 @@ class EditScreenViewModel @Inject constructor(
     }
 
     fun selectColor(color: Color) {
-        mSelectedColor.value = color
+        val keys = noteColors.keys
+        keys.forEach {
+            val cl = noteColors[it]
+            if (cl == color) {
+                mSelectedColor.value = it
+                return
+            }
+        }
+        mSelectedColor.value = DEFAULT_COLOR
     }
 
     fun selectCategory(id: Int) {
@@ -152,7 +152,7 @@ class EditScreenViewModel @Inject constructor(
                 delay(2000)
                 mShowEmptyFieldsMessage.value = false
             } else {
-                if(mCurrentNoteId != NEW_NOTE) {
+                if (mCurrentNoteId != NEW_NOTE) {
                     UpdateNoteUseCase(
                         id = mCurrentNoteId,
                         title = title.value,
@@ -161,7 +161,7 @@ class EditScreenViewModel @Inject constructor(
                         isPinned = isPinned.value,
                         isFavorite = isFavorite.value,
                         categoryId = mSelectedCategory.value.id,
-                        color = noteColors.indexOf(mSelectedColor.value)
+                        color = mSelectedColor.value
                     ).execute()
                 } else {
                     CreateNoteUseCase(
@@ -171,7 +171,7 @@ class EditScreenViewModel @Inject constructor(
                         isPinned = isPinned.value,
                         isFavorite = isFavorite.value,
                         categoryId = mSelectedCategory.value.id,
-                        color = noteColors.indexOf(mSelectedColor.value)
+                        color = mSelectedColor.value
                     ).execute()
                 }
             }
@@ -193,7 +193,7 @@ class EditScreenViewModel @Inject constructor(
                     isPinned = isPinned.value,
                     isFavorite = isFavorite.value,
                     collectionId = mSelectedCategory.value.id,
-                    color = noteColors.indexOf(mSelectedColor.value)
+                    color = mSelectedColor.value
                 ).execute()
 
                 mShowCopiedNoteMessage.value = true
@@ -213,3 +213,4 @@ class EditScreenViewModel @Inject constructor(
     }
 
 }
+

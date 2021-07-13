@@ -90,7 +90,7 @@ fun TrashScreen(
                     title = it.title,
                     content = it.content,
                     selected = trashScreenState.isSelected(it.id),
-                    color = noteColors[it.color],
+                    color = noteColors[it.color] ?: MaterialTheme.colors.background,
                     onLongClick = { onSelect(it.id, true) },
                     onClick = {
                         if (trashScreenState.isSelected(it.id)) {

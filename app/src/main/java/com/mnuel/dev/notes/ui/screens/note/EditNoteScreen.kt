@@ -1,6 +1,7 @@
 package com.mnuel.dev.notes.ui.screens.note
 
 import android.content.Intent
+import android.util.Log
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.animateColorAsState
@@ -37,13 +38,14 @@ import com.mnuel.dev.notes.model.room.entities.Collection
 import com.mnuel.dev.notes.ui.components.ColorPicker
 import com.mnuel.dev.notes.ui.screens.home.NotesScreenViewModel
 import com.mnuel.dev.notes.ui.screens.note.EditNoteScreenEvent.SelectCategoryEvent
+import com.mnuel.dev.notes.ui.theme.noteColors
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 
 sealed class EditNoteScreenEvent {
     object OnBackEvent : EditNoteScreenEvent()
     class SelectCategoryEvent(val categoryId: Int) : EditNoteScreenEvent()
-    object DeleteNoteEvent: EditNoteScreenEvent()
+    object DeleteNoteEvent : EditNoteScreenEvent()
 }
 
 enum class BottomBarState {
@@ -54,7 +56,7 @@ enum class BottomBarState {
 @Composable
 fun EditNoteScreen(
     onEvent: (EditNoteScreenEvent) -> Unit,
-    navController: NavController
+    navController: NavController,
 ) {
 
     val categoryId =
@@ -76,9 +78,10 @@ fun EditNoteScreen(
 
     val selectedColor by viewModel.selectedColor.collectAsState()
 
-    val animatedSelectedColor by animateColorAsState(selectedColor)
+    val animatedSelectedColor by animateColorAsState(noteColors[selectedColor]
+        ?: MaterialTheme.colors.background)
 
-    val colors = MaterialTheme.colors.copy(background = animatedSelectedColor)
+    val colors = MaterialTheme.colors.copy(surface = animatedSelectedColor)
 
     // Remember a SystemUiController
     val systemUiController = rememberSystemUiController()
@@ -94,27 +97,31 @@ fun EditNoteScreen(
 
         // setStatusBarsColor() and setNavigationBarsColor() also exist
     }
-
+    Log.d("EditNoteScreen", LocalContentColor.current.toString())
+    val contentColor =
+        if (noteColors[selectedColor] != null) Color.Black else MaterialTheme.colors.onSurface
     MaterialTheme(colors = colors) {
-        EditNoteScreenContent(
-            selectedCategory = selectedCategory,
-            viewModel = viewModel,
-            onEvent = { event ->
-                when (event) {
-                    EditNoteScreenEvent.OnBackEvent -> {
-                        navController.popBackStack()
-                    }
-                    is SelectCategoryEvent -> {
-                        navController.navigate(route = "${Section.SelectCategory.route}/${event.categoryId}")
-                    }
-                    is EditNoteScreenEvent.DeleteNoteEvent -> {
-                        viewModel.deleteNote()
-                        notesScreenViewModel?.showUndoMessage()
-                        navController.popBackStack()
+        CompositionLocalProvider(LocalContentColor provides contentColor) {
+            EditNoteScreenContent(
+                selectedCategory = selectedCategory,
+                viewModel = viewModel,
+                onEvent = { event ->
+                    when (event) {
+                        EditNoteScreenEvent.OnBackEvent -> {
+                            navController.popBackStack()
+                        }
+                        is SelectCategoryEvent -> {
+                            navController.navigate(route = "${Section.SelectCategory.route}/${event.categoryId}")
+                        }
+                        is EditNoteScreenEvent.DeleteNoteEvent -> {
+                            viewModel.deleteNote()
+                            notesScreenViewModel?.showUndoMessage()
+                            navController.popBackStack()
+                        }
                     }
                 }
-            }
-        )
+            )
+        }
     }
 }
 
@@ -122,7 +129,7 @@ fun EditNoteScreen(
 private fun EditNoteScreenContent(
     selectedCategory: Collection,
     onEvent: (EditNoteScreenEvent) -> Unit = {},
-    viewModel: EditScreenViewModel = hiltViewModel()
+    viewModel: EditScreenViewModel = hiltViewModel(),
 ) {
 
     val title by viewModel.title.collectAsState()
@@ -164,13 +171,15 @@ private fun EditNoteScreenContent(
         }
 
     }
-
+    Log.d("EditNoteScreen", LocalContentColor.current.toString())
     Scaffold(
         scaffoldState = scaffoldState,
+        contentColor = LocalContentColor.current,
         topBar = {
             TopAppBar(
-                backgroundColor = MaterialTheme.colors.background,
+                backgroundColor = MaterialTheme.colors.surface,
                 elevation = 0.dp,
+                contentColor = LocalContentColor.current,
                 navigationIcon = {
                     IconButton(onClick = { onEvent(EditNoteScreenEvent.OnBackEvent) }) {
                         Icon(imageVector = Icons.Outlined.ArrowBack, contentDescription = null)
@@ -208,90 +217,90 @@ private fun EditNoteScreenContent(
             )
         },
         bottomBar = {
+            val colors = listOf(MaterialTheme.colors.background) + noteColors.values
             val context = LocalContext.current
-            val contentColor = selectedColor.contentColor()
-            CompositionLocalProvider(LocalContentColor provides contentColor) {
-                BottomAppBar(
-                    bottomBarState = bottomBarState,
-                    selectedCategory = selectedCategory,
-                    onSelectCategory = { onEvent(SelectCategoryEvent(it)) },
-                    onShareClicked = {
-                        val sendIntent: Intent = Intent().apply {
-                            action = Intent.ACTION_SEND
-                            putExtra(Intent.EXTRA_TEXT, content)
-                            type = "text/plain"
-                        }
-
-                        val shareIntent = Intent.createChooser(sendIntent, null)
-                        context.startActivity(shareIntent)
-                    },
-                    onDeleteClicked = {
-                        onEvent(EditNoteScreenEvent.DeleteNoteEvent)
-                    },
-                    onCopyClicked = {
-                        viewModel.copyNote()
-                    },
-                    onColorPaletteClicked = { bottomBarState = BottomBarState.COLOR },
-                    colorPicker = {
-                        ColorPicker(
-                            colors = viewModel.noteColors,
-                            selectedColor = selectedColor,
-                            onSelectColor = {
-                                viewModel.selectColor(it)
-                            },
-                            onClose = { bottomBarState = BottomBarState.NORMAL }
-                        )
+            BottomAppBar(
+                bottomBarState = bottomBarState,
+                selectedCategory = selectedCategory,
+                onSelectCategory = { onEvent(SelectCategoryEvent(it)) },
+                onShareClicked = {
+                    val sendIntent: Intent = Intent().apply {
+                        action = Intent.ACTION_SEND
+                        putExtra(Intent.EXTRA_TEXT, content)
+                        type = "text/plain"
                     }
-                )
-            }
+
+                    val shareIntent = Intent.createChooser(sendIntent, null)
+                    context.startActivity(shareIntent)
+                },
+                onDeleteClicked = {
+                    onEvent(EditNoteScreenEvent.DeleteNoteEvent)
+                },
+                onCopyClicked = {
+                    viewModel.copyNote()
+                },
+                onColorPaletteClicked = { bottomBarState = BottomBarState.COLOR },
+                colorPicker = {
+                    ColorPicker(
+                        colors = colors,
+                        selectedColor = noteColors[selectedColor]
+                            ?: MaterialTheme.colors.background,
+                        onSelectColor = {
+                            viewModel.selectColor(it)
+                        },
+                        onClose = { bottomBarState = BottomBarState.NORMAL }
+                    )
+                }
+            )
         }
     ) {
-        Column {
-            Column(
-                modifier = Modifier
-                    .padding(horizontal = 16.dp)
-                    .weight(1f)
-            ) {
-                TextField(
+        Surface(contentColor = LocalContentColor.current,) {
+            Column {
+                Column(
                     modifier = Modifier
-                        .paddingFrom(FirstBaseline, before = 40.dp, after = 0.dp)
-                        .semantics { contentDescription = "Note Title" },
-                    value = title,
-                    placeholder = stringResource(R.string.note_title),
-                    onValueChange = { viewModel.changeTitle(it) },
-                    style = MaterialTheme.typography.h5
-                )
+                        .padding(horizontal = 16.dp)
+                        .weight(1f)
+                ) {
+                    TextField(
+                        modifier = Modifier
+                            .paddingFrom(FirstBaseline, before = 40.dp, after = 0.dp)
+                            .semantics { contentDescription = "Note Title" },
+                        value = title,
+                        placeholder = stringResource(R.string.note_title),
+                        onValueChange = { viewModel.changeTitle(it) },
+                        style = MaterialTheme.typography.h5
+                    )
 
-                if(creationDate.isNotEmpty() && modificationDate.isNotEmpty()) {
-                    Row(
-                        modifier = Modifier.paddingFromBaseline(top = 24.dp),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        ProvideTextStyle(
-                            value = MaterialTheme.typography.caption.copy(
-                                color = LocalContentColor.current.copy(
-                                    alpha = ContentAlpha.disabled
-                                )
-                            )
+                    if (creationDate.isNotEmpty() && modificationDate.isNotEmpty()) {
+                        Row(
+                            modifier = Modifier.paddingFromBaseline(top = 24.dp),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
-                            Text(text = "Created: $creationDate")
-                            Text(text = "Modified: $modificationDate")
+                            ProvideTextStyle(
+                                value = MaterialTheme.typography.caption.copy(
+                                    color = LocalContentColor.current.copy(
+                                        alpha = ContentAlpha.disabled
+                                    )
+                                )
+                            ) {
+                                Text(text = "Created: $creationDate")
+                                Text(text = "Modified: $modificationDate")
+                            }
                         }
                     }
+
+                    TextField(
+                        modifier = Modifier
+                            .paddingFromBaseline(top = 24.dp)
+                            .semantics { contentDescription = "Note Content" },
+                        value = content,
+                        placeholder = stringResource(R.string.note_content),
+                        onValueChange = { viewModel.changeContent(it) },
+                        style = MaterialTheme.typography.body1
+                    )
                 }
-
-                TextField(
-                    modifier = Modifier
-                        .paddingFromBaseline(top = 24.dp)
-                        .semantics { contentDescription = "Note Content" },
-                    value = content,
-                    placeholder = stringResource(R.string.note_content),
-                    onValueChange = { viewModel.changeContent(it) },
-                    style = MaterialTheme.typography.body1
-                )
+                Divider()
             }
-            Divider()
-
         }
     }
 }
@@ -303,7 +312,7 @@ fun TextField(
     onValueChange: (String) -> Unit,
     placeholder: String = "",
     singleLine: Boolean = false,
-    style: TextStyle = LocalTextStyle.current
+    style: TextStyle = LocalTextStyle.current,
 ) {
     Box {
         if (value.isEmpty()) {
@@ -319,7 +328,7 @@ fun TextField(
             value = value,
             singleLine = singleLine,
             onValueChange = onValueChange,
-            textStyle = style,
+            textStyle = style.copy(color = LocalContentColor.current),
         )
     }
 }
@@ -346,7 +355,6 @@ fun BottomAppBar(
     ) {
         CompositionLocalProvider(
             LocalContentAlpha provides ContentAlpha.medium,
-            LocalContentColor provides MaterialTheme.colors.onBackground
         ) {
             AnimatedContent(modifier = Modifier.weight(1f), targetState = bottomBarState) {
                 when (it) {
@@ -424,14 +432,6 @@ fun BottomAppBar(
                 )
             }
         }
-    }
-}
-
-@Composable
-fun Color.contentColor(): Color {
-    return when (this) {
-        MaterialTheme.colors.background -> MaterialTheme.colors.primary
-        else -> Color.Black.copy(alpha = ContentAlpha.medium)
     }
 }
 
