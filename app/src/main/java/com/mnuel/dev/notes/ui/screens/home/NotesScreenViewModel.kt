@@ -139,6 +139,24 @@ class NotesScreenViewModel @Inject constructor(
         }
     }
 
+    fun removeFromFavorites() {
+        val note = mState.value.selection
+        note?.let {
+            viewModelScope.launch {
+                UpdateNoteUseCase(
+                    id = note.id,
+                    title = note.title,
+                    content = note.content,
+                    isFavorite = false,
+                    isPinned = note.isPinned,
+                    categoryId = note.collectionId,
+                    color = note.color,
+                    repository = repository,
+                ).execute()
+            }
+        }
+    }
+
     /**
      * Deletes the currently selected note. If there is no selected note, then it does nothing.
      * */
@@ -158,7 +176,18 @@ class NotesScreenViewModel @Inject constructor(
         val note = mState.value.selection
         note?.let {
             viewModelScope.launch {
-                PinNoteUseCase(repository, note.id).execute()
+                //Pin the note
+                PinNoteUseCase(repository, note.id, pin = true).execute()
+            }
+        }
+    }
+
+    fun unpinNote() {
+        val note = mState.value.selection
+        note?.let {
+            viewModelScope.launch {
+                //Unpin the note.
+                PinNoteUseCase(repository, note.id, pin = false).execute()
             }
         }
     }

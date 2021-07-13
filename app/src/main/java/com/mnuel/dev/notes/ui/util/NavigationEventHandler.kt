@@ -50,5 +50,7 @@ fun handleNoteScreenEvents(
                 Sort.SortByModifiedDateDsc -> viewModel.sortByModified(asc = false)
             }
         }
+        RemoveFavorite -> viewModel.removeFromFavorites()
+        UnpinNote -> viewModel.unpinNote()
     }
 }
