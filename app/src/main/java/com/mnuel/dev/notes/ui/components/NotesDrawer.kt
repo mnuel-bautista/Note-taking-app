@@ -19,10 +19,6 @@ import androidx.compose.ui.unit.dp
 import com.mnuel.dev.notes.model.room.entities.Collection
 
 
-enum class Routes {
-    HOME, FAVORITES, COLLECTIONS, CREATE, BACKUP, TRASH, SETTINGS
-}
-
 data class DrawerSect(
     val route: String,
     val title: String,

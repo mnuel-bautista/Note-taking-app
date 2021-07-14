@@ -1,4 +1,4 @@
-package com.mnuel.dev.notes.ui
+package com.mnuel.dev.notes.ui.navigation
 
 import android.util.Log
 import androidx.compose.runtime.Composable
@@ -14,8 +14,8 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.navArgument
 import com.mnuel.dev.notes.R
 import com.mnuel.dev.notes.Section
-import com.mnuel.dev.notes.ui.components.Routes
-import com.mnuel.dev.notes.ui.screens.category.SelectCategoryScreen
+import com.mnuel.dev.notes.ui.screens.category.CollectionsScreen
+import com.mnuel.dev.notes.ui.screens.category.CollectionsScreenViewModel
 import com.mnuel.dev.notes.ui.screens.home.NotesScreen
 import com.mnuel.dev.notes.ui.screens.home.NotesScreenViewModel
 import com.mnuel.dev.notes.ui.screens.note.EditNoteScreen
@@ -30,14 +30,14 @@ import com.mnuel.dev.notes.ui.util.handleNoteScreenEvents
 fun NotesNavHost(
     navController: NavHostController,
     onNavigationIconClick: () -> Unit = {},
-    modifier: Modifier
+    modifier: Modifier,
 ) {
     NavHost(
         modifier = modifier,
         navController = navController,
-        startDestination = Routes.HOME.name
+        startDestination = Routes.HOME
     ) {
-        composable(route = Routes.HOME.name) { entry ->
+        composable(route = Routes.HOME) { entry ->
 
             val viewModel = hiltViewModel<NotesScreenViewModel>()
 
@@ -49,13 +49,13 @@ fun NotesNavHost(
                 onEvent = { event ->
                     handleNoteScreenEvents(navController, viewModel, uiState, context, event)
                 },
-                title = stringResource(id =  R.string.home),
+                title = stringResource(id = R.string.home),
                 uiState = uiState,
                 onNavigation = onNavigationIconClick,
             )
         }
 
-        composable(route = Routes.FAVORITES.name) { entry ->
+        composable(route = Routes.FAVORITES) { entry ->
 
             val viewModel = hiltViewModel<NotesScreenViewModel>()
 
@@ -74,7 +74,7 @@ fun NotesNavHost(
         }
 
         composable(
-            route = "${Routes.COLLECTIONS}/{collectionId}",
+            route = Routes.COLLECTIONS,
             arguments = listOf(navArgument("collectionId") { type = NavType.IntType })
         ) {
 
@@ -120,14 +120,17 @@ fun NotesNavHost(
             composable(
                 route = "${Section.SelectCategory.route}/{categoryId}",
                 arguments = listOf(navArgument("categoryId") { type = NavType.IntType })
-            ) { entry ->
+            ) {
 
-                SelectCategoryScreen(
-                    selectedCategoryId = entry.arguments?.getInt("categoryId") ?: 1,
-                    navController = navController,
+                val viewModel = hiltViewModel<CollectionsScreenViewModel>()
+
+                val uiState by viewModel.state.collectAsState()
+
+                CollectionsScreen(
                     onNavigateUp = {
                         navController.navigateUp()
-                    }
+                    },
+                    uiState = uiState
                 )
             }
 
@@ -143,7 +146,20 @@ fun NotesNavHost(
             )
         }
 
-        composable(route = Routes.TRASH.name) {
+        composable(route = Routes.CREATE_COLLECTION) {
+
+            val viewModel = hiltViewModel<CollectionsScreenViewModel>()
+
+            val uiState by viewModel.state.collectAsState()
+
+            CollectionsScreen(
+                uiState = uiState,
+                onNavigateUp = { navController.navigateUp() },
+                onCreateCollection = { viewModel.saveCollection(it) }
+            )
+        }
+
+        composable(route = Routes.TRASH) {
 
             val viewModel = hiltViewModel<TrashScreenViewModel>()
 
@@ -161,6 +177,7 @@ fun NotesNavHost(
                 }
             )
         }
+
 
     }
 }

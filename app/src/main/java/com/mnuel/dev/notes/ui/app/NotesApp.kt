@@ -12,9 +12,9 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
-import com.mnuel.dev.notes.ui.NotesNavHost
+import com.mnuel.dev.notes.ui.navigation.NotesNavHost
 import com.mnuel.dev.notes.ui.components.DrawerContent
-import com.mnuel.dev.notes.ui.components.Routes
+import com.mnuel.dev.notes.ui.navigation.Routes
 import kotlinx.coroutines.launch
 
 @Composable
@@ -58,7 +58,7 @@ fun NotesApp() {
                     onNavigation = {
                         scope.launch {
                             navController.navigate(it.route) {
-                                popUpTo(route = Routes.HOME.name) { inclusive = false }
+                                popUpTo(route = Routes.HOME) { inclusive = false }
                             }
                             drawerState.close()
                         }

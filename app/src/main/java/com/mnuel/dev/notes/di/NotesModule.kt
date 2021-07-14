@@ -4,7 +4,7 @@ import android.content.Intent
 import androidx.lifecycle.SavedStateHandle
 import com.mnuel.dev.notes.model.repositories.*
 import com.mnuel.dev.notes.model.room.daos.NoteDao
-import com.mnuel.dev.notes.ui.components.Routes
+import com.mnuel.dev.notes.ui.navigation.Routes
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -25,11 +25,11 @@ class NotesModule {
         } else {
             val uriString = intent.data.toString()
             when {
-                uriString.contains(Routes.COLLECTIONS.name) -> {
+                uriString.contains("collections") -> {
                     val id = uriString.substringAfterLast("/").toInt()
                     return CollectionNotesRepository(dao, id)
                 }
-                uriString.contains(Routes.FAVORITES.name) -> {
+                uriString.contains(Routes.FAVORITES) -> {
                     return FavoriteNotesRepository(dao)
                 }
             }
