@@ -67,7 +67,6 @@ fun NotesScreen(
     val scope = rememberCoroutineScope()
 
     val notes = uiState.notes
-    val selection = uiState.selection
     val menuItems = uiState.contextMenuItems
     val pinnedNotes = uiState.pinnedNotes
     val showUndoMessage = uiState.showUndoMessage
@@ -139,7 +138,7 @@ fun NotesScreen(
                 contentPadding = PaddingValues(all = 8.dp)
             ) {
                 item {
-                    Text("Pinned notes")
+                    Text(if(pinnedNotes.isNotEmpty()) "Pinned notes" else "")
                 }
                 items(pinnedNotes) {
                     NoteListItem(
@@ -154,7 +153,7 @@ fun NotesScreen(
                     )
                 }
                 item {
-                    Text("Notes")
+                    Text(if(notes.isNotEmpty()) "Notes" else "")
                 }
                 items(notes, key = { "$it" }) {
                     NoteListItem(

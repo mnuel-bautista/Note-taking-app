@@ -164,7 +164,7 @@ class NotesScreenViewModel @Inject constructor(
         val note = mState.value.selection
         note?.let {
             viewModelScope.launch {
-                DeleteNoteUseCase(repository, note.id).execute()
+                MoveToTrashUseCase(note.id, repository).execute()
             }
         }
     }
