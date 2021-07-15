@@ -11,6 +11,8 @@ interface CollectionsRepository {
 
     suspend fun getCollectionById(id: Int): Collection
 
+    suspend fun getCollectionByIdFlow(id: Int): Flow<Collection?>
+
     suspend fun insert(collection: Collection)
 
     suspend fun delete(collection: Collection)
@@ -31,6 +33,10 @@ class CollectionsRepositoryImpl(private val collectionDao: CollectionDao):
     override suspend fun getCollectionById(id: Int): Collection {
         val category = collectionDao.getCollectionById(id)
         return Collection(category.id, category.description)
+    }
+
+    override suspend fun getCollectionByIdFlow(id: Int): Flow<Collection?> {
+        return collectionDao.getCollectionByIdFlow(id)
     }
 
     override suspend fun insert(collection: Collection) {

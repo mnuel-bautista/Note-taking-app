@@ -6,6 +6,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.mnuel.dev.notes.domain.usecases.CopyNoteUseCase
 import com.mnuel.dev.notes.domain.usecases.CreateNoteUseCase
+import com.mnuel.dev.notes.domain.usecases.GetCollectionUseCase
 import com.mnuel.dev.notes.domain.usecases.UpdateNoteUseCase
 import com.mnuel.dev.notes.model.repositories.CollectionsRepository
 import com.mnuel.dev.notes.model.repositories.NotesRepository
@@ -13,10 +14,10 @@ import com.mnuel.dev.notes.model.room.entities.Collection
 import com.mnuel.dev.notes.ui.theme.DEFAULT_COLOR
 import com.mnuel.dev.notes.ui.theme.noteColors
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.delay
+import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.collect
 import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle
 import javax.inject.Inject
@@ -74,6 +75,8 @@ class EditScreenViewModel @Inject constructor(
     val showEmptyFieldsMessage: StateFlow<Boolean> = mShowEmptyFieldsMessage
 
     val showCopiedNoteMessage: StateFlow<Boolean> = mShowCopiedNoteMessage
+
+    private var collectionJob: Job? = null
 
     init {
         val noteIdArg = savedStateHandle.get<String>("noteId")
@@ -137,9 +140,11 @@ class EditScreenViewModel @Inject constructor(
     }
 
     fun selectCollection(id: Int) {
-        viewModelScope.launch {
-            val category = collectionsRepository.getCollectionById(id)
-            mSelectedCollection.value = category
+        collectionJob?.cancel()
+        collectionJob = viewModelScope.launch {
+            GetCollectionUseCase(id, collectionsRepository)
+                .execute()
+                .collect { mSelectedCollection.value = it }
         }
     }
 

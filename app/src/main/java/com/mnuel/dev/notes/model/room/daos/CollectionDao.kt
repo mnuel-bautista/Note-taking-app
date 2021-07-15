@@ -16,6 +16,9 @@ interface CollectionDao {
     @Query("SELECT * FROM collections WHERE id = :id")
     suspend fun getCollectionById(id: Int): Collection
 
+    @Query("SELECT * FROM collections WHERE id = :id")
+    fun getCollectionByIdFlow(id: Int): Flow<Collection?>
+
     @Query("SELECT * FROM collections LIMIT 3")
     suspend fun getDefaultCollections(): List<Collection>
 
