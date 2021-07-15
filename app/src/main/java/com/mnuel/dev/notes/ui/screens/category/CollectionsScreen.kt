@@ -112,21 +112,23 @@ fun CollectionsScreen(
                         },
                         menu = {
                             Box {
-                                IconButton(
-                                    onClick = {
-                                        contextMenuCollection = it
-                                        expanded = true
+                                if(!isSelectionScreen) {
+                                    IconButton(
+                                        onClick = {
+                                            contextMenuCollection = it
+                                            expanded = true
+                                        }
+                                    ) {
+                                        Icon(imageVector = Icons.Outlined.MoreVert,
+                                            contentDescription = "")
                                     }
-                                ) {
-                                    Icon(imageVector = Icons.Outlined.MoreVert,
-                                        contentDescription = "")
+                                    ListItemDropdownMenu(
+                                        expanded = expanded,
+                                        onDismiss = { expanded = false },
+                                        onDelete = { showDeleteDialog = true },
+                                        onEdit = {},
+                                    )
                                 }
-                                ListItemDropdownMenu(
-                                    expanded = expanded,
-                                    onDismiss = { expanded = false },
-                                    onDelete = { showDeleteDialog = true },
-                                    onEdit = {},
-                                )
                             }
                         }
                     )
