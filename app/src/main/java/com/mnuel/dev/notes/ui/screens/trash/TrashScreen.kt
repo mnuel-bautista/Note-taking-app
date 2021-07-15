@@ -25,6 +25,7 @@ fun TrashScreen(
     onDeleteAllPermanently: () -> Unit = {},
     onDeleteSelected: () -> Unit = {},
     onRestoreNotes: () -> Unit = {},
+    onUnselectAll: () -> Unit = {},
     onSelect: (id: Int, selected: Boolean) -> Unit,
     onNavigateUp: () -> Unit,
 ) {
@@ -48,7 +49,7 @@ fun TrashScreen(
                             Icon(imageVector = Icons.Outlined.ArrowBack, contentDescription = "")
                         }
                     } else {
-                        IconButton(onClick = {}) {
+                        IconButton(onClick = onUnselectAll) {
                             Icon(imageVector = Icons.Outlined.Clear, contentDescription = "")
                         }
                     }

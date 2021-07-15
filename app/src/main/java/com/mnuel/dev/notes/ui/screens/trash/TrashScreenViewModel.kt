@@ -88,6 +88,11 @@ class TrashScreenViewModel @Inject constructor(
         mState.value = mState.value.copy(selection = mSelectedNotes, selectCount = selectCount)
     }
 
+    fun unSelectAll() {
+        mSelectedNotes.clear()
+        mState.value = mState.value.copy(selection = mSelectedNotes, selectCount = 0)
+    }
+
 
     private fun selectNote(id: Int, selected: Boolean) {
 

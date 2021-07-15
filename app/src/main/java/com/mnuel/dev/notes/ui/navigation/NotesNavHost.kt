@@ -137,7 +137,7 @@ fun NotesNavHost(
                         viewModel.selectCollection(it.id)
                         editScreenViewModel.selectCollection(it.id)
                     },
-                    onDeleteCollection = {viewModel.deleteCollection(it)},
+                    onDeleteCollection = { viewModel.deleteCollection(it) },
                     uiState = uiState
                 )
             }
@@ -182,6 +182,7 @@ fun NotesNavHost(
                 onDeleteAllPermanently = { viewModel.deleteAllPermanently() },
                 onRestoreNotes = { viewModel.restoreNotes() },
                 onDeleteSelected = { viewModel.deleteSelected() },
+                onUnselectAll = { viewModel.unSelectAll() },
                 onSelect = { id, selected ->
                     if (selected) viewModel.selectNote(id) else viewModel.unSelectNote(id)
                     Log.d("NotesNavHost", "selected: $selected id: $id")
