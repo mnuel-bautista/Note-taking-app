@@ -88,6 +88,7 @@ class EditScreenViewModel @Inject constructor(
         if (mCurrentNoteId != NEW_NOTE) {
             viewModelScope.launch {
                 val note = repository.getNoteById(mCurrentNoteId)
+                val collection = collectionsRepository.getCollectionById(note.collectionId)
                 mTitle.value = note.title
                 mContent.value = note.content
                 mIsFavorite.value = note.isFavorite
@@ -95,6 +96,7 @@ class EditScreenViewModel @Inject constructor(
                 mSelectedColor.value = note.color
                 mCreationDate.value = creationDateFormatter.format(note.creationDate)
                 mModificationDate.value = modificationDateFormatter.format(note.modificationDate)
+                mSelectedCollection.value = collection
             }
         } else {
             mCreationDate.value = ""
