@@ -20,6 +20,7 @@ import com.mnuel.dev.notes.ui.screens.home.NotesScreen
 import com.mnuel.dev.notes.ui.screens.home.NotesScreenViewModel
 import com.mnuel.dev.notes.ui.screens.note.EditNoteScreen
 import com.mnuel.dev.notes.ui.screens.note.EditNoteScreenEvent
+import com.mnuel.dev.notes.ui.screens.note.EditScreenViewModel
 import com.mnuel.dev.notes.ui.screens.search.SearchScreen
 import com.mnuel.dev.notes.ui.screens.search.SearchScreenViewModel
 import com.mnuel.dev.notes.ui.screens.trash.TrashScreen
@@ -74,7 +75,7 @@ fun NotesNavHost(
         }
 
         composable(
-            route = Routes.COLLECTIONS,
+            route = "${Routes.COLLECTIONS}/{collectionId}",
             arguments = listOf(navArgument("collectionId") { type = NavType.IntType })
         ) {
 
@@ -96,7 +97,7 @@ fun NotesNavHost(
 
         navigation(
             startDestination = "start?noteId={noteId}",
-            route = "${Section.EditNote.route}?noteId={noteId}",
+            route = "${Routes.EDIT_NOTE}?noteId={noteId}",
         ) {
             composable(
                 route = "start?noteId={noteId}",
@@ -108,8 +109,8 @@ fun NotesNavHost(
                             EditNoteScreenEvent.OnBackEvent -> {
                                 navController.popBackStack()
                             }
-                            is EditNoteScreenEvent.SelectCategoryEvent -> {
-                                navController.navigate(route = "${Section.SelectCategory.route}/${event.categoryId}")
+                            is EditNoteScreenEvent.SelectCollection -> {
+                                navController.navigate(route = "${Routes.SELECT_COLLECTION}/${event.collectionId}")
                             }
                         }
                     },
@@ -118,11 +119,13 @@ fun NotesNavHost(
             }
 
             composable(
-                route = "${Section.SelectCategory.route}/{categoryId}",
-                arguments = listOf(navArgument("categoryId") { type = NavType.IntType })
+                route = "${Routes.SELECT_COLLECTION}/{collectionId}",
+                arguments = listOf(navArgument("collectionId") { type = NavType.IntType })
             ) {
 
                 val viewModel = hiltViewModel<CollectionsScreenViewModel>()
+                val editScreenViewModel =
+                    hiltViewModel<EditScreenViewModel>(navController.getBackStackEntry("start?noteId={noteId}"))
 
                 val uiState by viewModel.state.collectAsState()
 
@@ -130,11 +133,17 @@ fun NotesNavHost(
                     onNavigateUp = {
                         navController.navigateUp()
                     },
+                    onSelectCollection = {
+                        viewModel.selectCollection(it.id)
+                        editScreenViewModel.selectCollection(it.id)
+                    },
                     uiState = uiState
                 )
             }
 
+
         }
+
 
 
         composable(route = "${Section.Search.route}?isFavorite={isFavorite}&collectionId={collectionId}") {
@@ -155,7 +164,8 @@ fun NotesNavHost(
             CollectionsScreen(
                 uiState = uiState,
                 onNavigateUp = { navController.navigateUp() },
-                onCreateCollection = { viewModel.saveCollection(it) }
+                onCreateCollection = { viewModel.saveCollection(it) },
+                onDeleteCollection = { viewModel.deleteCollection(it) },
             )
         }
 

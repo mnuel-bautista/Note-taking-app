@@ -18,7 +18,6 @@ import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.layout.FirstBaseline
@@ -35,23 +34,23 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.mnuel.dev.notes.R
-import com.mnuel.dev.notes.Section
 import com.mnuel.dev.notes.model.room.entities.Collection
 import com.mnuel.dev.notes.ui.components.ColorPicker
+import com.mnuel.dev.notes.ui.navigation.Routes
 import com.mnuel.dev.notes.ui.screens.home.NotesScreenViewModel
-import com.mnuel.dev.notes.ui.screens.note.EditNoteScreenEvent.SelectCategoryEvent
+import com.mnuel.dev.notes.ui.screens.note.EditNoteScreenEvent.SelectCollection
 import com.mnuel.dev.notes.ui.theme.noteColors
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 
 sealed class EditNoteScreenEvent {
     object OnBackEvent : EditNoteScreenEvent()
-    class SelectCategoryEvent(val categoryId: Int) : EditNoteScreenEvent()
-    object DeleteNoteEvent : EditNoteScreenEvent()
+    class SelectCollection(val collectionId: Int) : EditNoteScreenEvent()
+    object DeleteNote : EditNoteScreenEvent()
 }
 
 enum class BottomBarState {
-    COLOR, NORMAL
+    COLOR, DEFAULT
 }
 
 
@@ -61,22 +60,13 @@ fun EditNoteScreen(
     navController: NavController,
 ) {
 
-    val categoryId =
-        navController.currentBackStackEntry?.savedStateHandle?.getLiveData<Int>("Selected Category")
-            ?.observeAsState()
-
     val viewModel = hiltViewModel<EditScreenViewModel>()
 
     val previousEntry = navController.previousBackStackEntry
 
     val notesScreenViewModel = previousEntry?.let { hiltViewModel<NotesScreenViewModel>(it) }
 
-    DisposableEffect(key1 = categoryId) {
-        viewModel.selectCategory(categoryId?.value ?: 1)
-        onDispose { }
-    }
-
-    val selectedCategory by viewModel.selectedCategory.collectAsState()
+    val selectedCollection by viewModel.selectedCollection.collectAsState()
 
     val selectedColor by viewModel.selectedColor.collectAsState()
 
@@ -99,23 +89,23 @@ fun EditNoteScreen(
 
         // setStatusBarsColor() and setNavigationBarsColor() also exist
     }
-    Log.d("EditNoteScreen", LocalContentColor.current.toString())
+
     val contentColor =
         if (noteColors[selectedColor] != null) Color.Black else MaterialTheme.colors.onSurface
     MaterialTheme(colors = colors) {
         CompositionLocalProvider(LocalContentColor provides contentColor) {
             EditNoteScreenContent(
-                selectedCategory = selectedCategory,
+                selectedCollection = selectedCollection,
                 viewModel = viewModel,
                 onEvent = { event ->
                     when (event) {
                         EditNoteScreenEvent.OnBackEvent -> {
                             navController.popBackStack()
                         }
-                        is SelectCategoryEvent -> {
-                            navController.navigate(route = "${Section.SelectCategory.route}/${event.categoryId}")
+                        is SelectCollection -> {
+                            navController.navigate(route = "${Routes.SELECT_COLLECTION}/${event.collectionId}")
                         }
-                        is EditNoteScreenEvent.DeleteNoteEvent -> {
+                        is EditNoteScreenEvent.DeleteNote -> {
                             viewModel.deleteNote()
                             notesScreenViewModel?.showUndoMessage()
                             navController.popBackStack()
@@ -129,7 +119,7 @@ fun EditNoteScreen(
 
 @Composable
 private fun EditNoteScreenContent(
-    selectedCategory: Collection,
+    selectedCollection: Collection,
     onEvent: (EditNoteScreenEvent) -> Unit = {},
     viewModel: EditScreenViewModel = hiltViewModel(),
 ) {
@@ -150,7 +140,7 @@ private fun EditNoteScreenContent(
 
     val scaffoldState = rememberScaffoldState()
 
-    var bottomBarState by remember { mutableStateOf(BottomBarState.NORMAL) }
+    var bottomBarState by remember { mutableStateOf(BottomBarState.DEFAULT) }
 
 
     LaunchedEffect(Unit) {
@@ -223,8 +213,8 @@ private fun EditNoteScreenContent(
             val context = LocalContext.current
             BottomAppBar(
                 bottomBarState = bottomBarState,
-                selectedCategory = selectedCategory,
-                onSelectCategory = { onEvent(SelectCategoryEvent(it)) },
+                selectedCollection = selectedCollection,
+                onSelectCollection = { onEvent(SelectCollection(it)) },
                 onShareClicked = {
                     val sendIntent: Intent = Intent().apply {
                         action = Intent.ACTION_SEND
@@ -236,7 +226,7 @@ private fun EditNoteScreenContent(
                     context.startActivity(shareIntent)
                 },
                 onDeleteClicked = {
-                    onEvent(EditNoteScreenEvent.DeleteNoteEvent)
+                    onEvent(EditNoteScreenEvent.DeleteNote)
                 },
                 onCopyClicked = {
                     viewModel.copyNote()
@@ -250,7 +240,7 @@ private fun EditNoteScreenContent(
                         onSelectColor = {
                             viewModel.selectColor(it)
                         },
-                        onClose = { bottomBarState = BottomBarState.NORMAL }
+                        onClose = { bottomBarState = BottomBarState.DEFAULT }
                     )
                 }
             )
@@ -339,9 +329,9 @@ fun TextField(
 @OptIn(ExperimentalAnimationApi::class)
 @Composable
 fun BottomAppBar(
-    selectedCategory: Collection,
-    bottomBarState: BottomBarState = BottomBarState.NORMAL,
-    onSelectCategory: (Int) -> Unit = {},
+    selectedCollection: Collection,
+    bottomBarState: BottomBarState = BottomBarState.DEFAULT,
+    onSelectCollection: (Int) -> Unit = {},
     onShareClicked: () -> Unit = {},
     onDeleteClicked: () -> Unit = {},
     onCopyClicked: () -> Unit = {},
@@ -364,7 +354,7 @@ fun BottomAppBar(
                     BottomBarState.COLOR -> {
                         colorPicker()
                     }
-                    BottomBarState.NORMAL -> {
+                    BottomBarState.DEFAULT -> {
                         Row {
                             IconButton(onClick = onColorPaletteClicked) {
                                 Icon(
@@ -418,7 +408,7 @@ fun BottomAppBar(
                     .clickable(
                         interactionSource = MutableInteractionSource(),
                         indication = rememberRipple(),
-                        onClick = { onSelectCategory(selectedCategory.id) }
+                        onClick = { onSelectCollection(selectedCollection.id) }
                     ),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
@@ -430,7 +420,7 @@ fun BottomAppBar(
                 )
 
                 Text(
-                    text = selectedCategory.description,
+                    text = selectedCollection.description,
                     style = MaterialTheme.typography.subtitle1,
                 )
             }

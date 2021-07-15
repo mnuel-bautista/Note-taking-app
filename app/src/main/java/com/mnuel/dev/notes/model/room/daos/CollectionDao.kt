@@ -1,6 +1,7 @@
 package com.mnuel.dev.notes.model.room.daos
 
 import androidx.room.Dao
+import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.Query
 import com.mnuel.dev.notes.model.room.entities.Collection
@@ -20,5 +21,8 @@ interface CollectionDao {
 
     @Insert
     suspend fun insert(category: Collection)
+
+    @Delete
+    suspend fun delete(collection: Collection)
 
 }

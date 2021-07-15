@@ -13,6 +13,8 @@ interface CollectionsRepository {
 
     suspend fun insert(collection: Collection)
 
+    suspend fun delete(collection: Collection)
+
     suspend fun getDefaultCollections(): List<Collection>
 
 }
@@ -33,6 +35,10 @@ class CollectionsRepositoryImpl(private val collectionDao: CollectionDao):
 
     override suspend fun insert(collection: Collection) {
         collectionDao.insert(Collection(collection.id, collection.description))
+    }
+
+    override suspend fun delete(collection: Collection) {
+        collectionDao.delete(collection)
     }
 
     override suspend fun getDefaultCollections(): List<Collection> {

@@ -1,17 +1,15 @@
 package com.mnuel.dev.notes.ui.screens.category
 
 import androidx.compose.animation.animateColorAsState
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Add
-import androidx.compose.material.icons.outlined.ArrowBack
-import androidx.compose.material.ripple.rememberRipple
+import androidx.compose.material.icons.outlined.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -21,13 +19,15 @@ import androidx.compose.ui.unit.dp
 import com.mnuel.dev.notes.model.room.entities.Collection
 
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun CollectionsScreen(
     uiState: CollectionsScreenState = remember { CollectionsScreenState() },
     onNavigateUp: () -> Unit = {},
-    onCollectionSelected: (Collection) -> Unit = {},
+    onSelectCollection: (Collection) -> Unit = {},
     onNavigate: (Collection) -> Unit = {},
     onCreateCollection: (String) -> Unit = {},
+    onDeleteCollection: (Collection) -> Unit = {},
 ) {
 
     val selection = uiState.selection
@@ -38,6 +38,11 @@ fun CollectionsScreen(
 
     var showDialog by remember { mutableStateOf(false) }
 
+    var showDeleteDialog by remember { mutableStateOf(false) }
+
+    //The collection that has been selected with the MoreVert icon in a List Item.
+    var contextMenuCollection: Collection? by remember { mutableStateOf(null) }
+
     if (showDialog) {
         CreateCollectionDialog(
             onCancel = { showDialog = false },
@@ -47,6 +52,14 @@ fun CollectionsScreen(
             }
         )
     }
+
+    if (showDeleteDialog) {
+        DeleteCollectionDialog(
+            onCancel = { showDeleteDialog = false },
+            onAccept = { contextMenuCollection?.let { onDeleteCollection(it) } }
+        )
+    }
+
 
     Scaffold(
         topBar = {
@@ -67,62 +80,94 @@ fun CollectionsScreen(
             )
         }
     ) {
-        LazyColumn(
-            modifier = Modifier.padding(top = 8.dp),
-            contentPadding = PaddingValues(horizontal = 8.dp)
-        ) {
-            items(
-                collections,
-                key = {
-                    if (isSelectionScreen) {
-                        "$it:${it.id == selection?.id}"
-                    } else {
-                        "$it"
-                    }
-                }
+        Surface {
+            LazyColumn(
+                modifier = Modifier.padding(top = 8.dp),
             ) {
-                CategoryElement(
-                    selected = it.id == selection?.id,
-                    description = it.description,
-                    onSelect = {
+                items(
+                    collections,
+                    key = {
                         if (isSelectionScreen) {
-                            onCollectionSelected(it)
+                            "$it:${it.id == selection?.id}"
                         } else {
-                            onNavigate(it)
+                            "$it"
                         }
                     }
-                )
+                ) {
+
+                    var expanded by remember { mutableStateOf(false) }
+
+                    CollectionItem(
+                        selected = it.id == selection?.id,
+                        description = it.description,
+                        onClick = {
+                            if (isSelectionScreen) {
+                                onSelectCollection(it)
+                            } else {
+                                onNavigate(it)
+                            }
+                        },
+                        onLongClick = {
+
+                        },
+                        menu = {
+                            Box {
+                                IconButton(
+                                    onClick = {
+                                        contextMenuCollection = it
+                                        expanded = true
+                                    }
+                                ) {
+                                    Icon(imageVector = Icons.Outlined.MoreVert,
+                                        contentDescription = "")
+                                }
+                                ListItemDropdownMenu(
+                                    expanded = expanded,
+                                    onDismiss = { expanded = false },
+                                    onDelete = { showDeleteDialog = true },
+                                    onEdit = {},
+                                )
+                            }
+                        }
+                    )
+                }
             }
         }
     }
 }
 
 
+@ExperimentalFoundationApi
+@OptIn(ExperimentalMaterialApi::class)
 @Composable
-fun CategoryElement(
+fun CollectionItem(
     selected: Boolean = false,
     description: String,
-    onSelect: () -> Unit,
+    onClick: () -> Unit,
+    onLongClick: () -> Unit = {},
+    menu: @Composable (() -> Unit)? = null,
 ) {
 
     val color by animateColorAsState(if (selected) Color.Green.copy(alpha = 0.12f) else Color.Transparent)
 
-    Box(
-        Modifier
-            .fillMaxWidth()
-            .height(58.dp)
-            .background(color)
-            .clickable(
-                interactionSource = MutableInteractionSource(),
-                indication = rememberRipple(),
-                onClick = onSelect
-            ),
-        contentAlignment = Alignment.CenterStart,
-    ) {
-        Text(
-            modifier = Modifier.padding(start = 16.dp),
-            text = description
-        )
+    Surface {
+        ListItem(
+            modifier = Modifier
+                .background(color)
+                .combinedClickable(onLongClick = onLongClick) { onClick() },
+            icon = {
+                Icon(imageVector = Icons.Outlined.BookmarkBorder, contentDescription = "")
+            },
+            trailing = {
+                menu?.invoke()
+            }
+        ) {
+            Text(
+                modifier = Modifier.padding(start = 16.dp),
+                text = description,
+                style = MaterialTheme.typography.subtitle1
+            )
+        }
     }
 }
 
@@ -153,10 +198,48 @@ fun CreateCollectionDialog(onCancel: () -> Unit, onAccept: (String) -> Unit) {
         },
         dismissButton = {
             TextButton(onClick = onCancel) {
-                Text("DISAGREE")
+                Text("CANCEL")
             }
         }
     )
+}
+
+@Composable
+fun DeleteCollectionDialog(onCancel: () -> Unit, onAccept: () -> Unit) {
+    AlertDialog(
+        modifier = Modifier.fillMaxWidth(.85f),
+        onDismissRequest = onCancel,
+        text = {
+            Text("The notes in this collection will be deleted as well.")
+        },
+        confirmButton = {
+            TextButton(onClick = onAccept) {
+                Text("CONFIRM")
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onCancel) {
+                Text("CANCEL")
+            }
+        }
+    )
+}
+
+@Composable
+fun ListItemDropdownMenu(
+    expanded: Boolean = false,
+    onEdit: () -> Unit = {},
+    onDelete: () -> Unit = {},
+    onDismiss: () -> Unit = {},
+) {
+    DropdownMenu(expanded = expanded, onDismissRequest = onDismiss) {
+        DropdownMenuItem(onClick = onEdit) {
+            Text("Edit")
+        }
+        DropdownMenuItem(onClick = onDelete) {
+            Text("Delete")
+        }
+    }
 }
 
 
@@ -167,8 +250,9 @@ fun CreateCollectionDialogPreview() {
 }
 
 
+@OptIn(ExperimentalFoundationApi::class)
 @Preview
 @Composable
 fun CategoryElementPreview() {
-    CategoryElement(description = "School", onSelect = {})
+    CollectionItem(description = "School", onClick = {}, onLongClick = {})
 }

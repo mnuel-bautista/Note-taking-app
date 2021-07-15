@@ -1,7 +1,9 @@
 package com.mnuel.dev.notes.ui.screens.category
 
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.mnuel.dev.notes.domain.usecases.DeleteCollectionUseCase
 import com.mnuel.dev.notes.domain.usecases.SaveCollectionUseCase
 import com.mnuel.dev.notes.model.repositories.CollectionsRepository
 import com.mnuel.dev.notes.model.room.entities.Collection
@@ -15,38 +17,47 @@ import javax.inject.Inject
 
 @HiltViewModel
 class CollectionsScreenViewModel @Inject constructor(
+    private val savedStateHandle: SavedStateHandle,
     private val repository: CollectionsRepository,
 ) : ViewModel() {
 
-    private val mSelectedCollection: MutableStateFlow<Collection?> = MutableStateFlow(null)
+    private val selection: MutableStateFlow<Collection?> = MutableStateFlow(null)
 
-    private val mCategories: MutableStateFlow<List<Collection>> = MutableStateFlow(emptyList())
+    private val categories: MutableStateFlow<List<Collection>> = MutableStateFlow(emptyList())
+
+    private val isSelectionScreen: MutableStateFlow<Boolean> = MutableStateFlow(false)
 
     private val mState: MutableStateFlow<CollectionsScreenState> = MutableStateFlow(CollectionsScreenState())
-
-    val selectedCategory: StateFlow<Collection?> = mSelectedCollection
-
-    val categories: StateFlow<List<Collection>> = mCategories
 
     val state: StateFlow<CollectionsScreenState> = mState
 
     init {
         viewModelScope.launch {
             repository.getCollections().collect {
-                mCategories.value = it
+                categories.value = it
             }
         }
         viewModelScope.launch {
-            combine(mCategories, mSelectedCollection) { categories, selection ->
-                CollectionsScreenState(categories, selection)
+            combine(categories, selection, isSelectionScreen) { categories, selection, isSelectionScreen->
+                CollectionsScreenState(categories, selection, isSelectionScreen)
             }.collect { mState.value = it }
+        }
+
+        val collectionId = savedStateHandle.get<Int>("collectionId")
+        isSelectionScreen.value = collectionId != null
+
+        if(collectionId != null)  {
+            viewModelScope.launch {
+                val collection = repository.getCollectionById(collectionId)
+                selection.value = collection
+            }
         }
     }
 
-    fun selectCategory(id: Int) {
+    fun selectCollection(id: Int) {
         viewModelScope.launch {
             val cat = repository.getCollectionById(id)
-            mSelectedCollection.value = cat
+            selection.value = cat
         }
     }
 
@@ -57,8 +68,18 @@ class CollectionsScreenViewModel @Inject constructor(
         }
     }
 
+    fun deleteCollection(collection: Collection) {
+        viewModelScope.launch {
+            DeleteCollectionUseCase(collection, repository)
+                .execute()
+        }
+    }
+
 }
 
+/**
+ * @param isSelectionScreen When the screen is used for selecting a collection, this is true.
+ * */
 data class CollectionsScreenState(
     val collections: List<Collection> = emptyList(),
     val selection: Collection? = null,

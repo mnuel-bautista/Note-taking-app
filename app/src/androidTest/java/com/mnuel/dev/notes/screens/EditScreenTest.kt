@@ -3,7 +3,6 @@ package com.mnuel.dev.notes.screens
 import androidx.compose.ui.test.*
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import com.mnuel.dev.notes.MainActivity
-import com.mnuel.dev.notes.domain.entities.Category
 import com.mnuel.dev.notes.model.repositories.CollectionsRepository
 import com.mnuel.dev.notes.model.repositories.NotesRepository
 import com.mnuel.dev.notes.model.room.entities.Collection

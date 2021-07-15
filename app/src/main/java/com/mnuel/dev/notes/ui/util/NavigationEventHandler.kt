@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.Intent
 import androidx.navigation.NavHostController
 import com.mnuel.dev.notes.Section
+import com.mnuel.dev.notes.ui.navigation.Routes
 import com.mnuel.dev.notes.ui.screens.home.HomeScreenEvent
 import com.mnuel.dev.notes.ui.screens.home.HomeScreenEvent.*
 import com.mnuel.dev.notes.ui.screens.home.NoteScreenState
@@ -18,8 +19,8 @@ fun handleNoteScreenEvents(
     event: HomeScreenEvent
 ) {
     when (event) {
-        CreateNoteEvent -> navController.navigate(route = Section.EditNote.route)
-        is EditNoteEvent -> navController.navigate(route = "${Section.EditNote.route}?noteId=${event.noteId}")
+        CreateNoteEvent -> navController.navigate(route = Routes.EDIT_NOTE)
+        is EditNoteEvent -> navController.navigate(route = "${Routes.EDIT_NOTE}?noteId=${event.noteId}")
         SearchEvent -> navController.navigate(route = Section.Search.route)
         is SelectNoteEvent -> viewModel.selectNote(event.noteId)
         AddFavorite -> viewModel.addToFavorites()

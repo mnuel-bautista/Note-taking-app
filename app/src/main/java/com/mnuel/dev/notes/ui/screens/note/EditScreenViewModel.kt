@@ -16,9 +16,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
-import java.time.OffsetDateTime
 import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle
 import javax.inject.Inject
@@ -44,7 +42,7 @@ class EditScreenViewModel @Inject constructor(
 
     private val mModificationDate: MutableStateFlow<String> = MutableStateFlow("")
 
-    private val mSelectedCategory: MutableStateFlow<Collection> =
+    private val mSelectedCollection: MutableStateFlow<Collection> =
         MutableStateFlow(Collection(1, "School"))
 
     private val mCategories: MutableStateFlow<List<Collection>> = MutableStateFlow(emptyList())
@@ -63,7 +61,7 @@ class EditScreenViewModel @Inject constructor(
 
     val isPinned: StateFlow<Boolean> = mIsPinned
 
-    val selectedCategory: StateFlow<Collection> = mSelectedCategory
+    val selectedCollection: StateFlow<Collection> = mSelectedCollection
 
     val selectedColor: StateFlow<Int> = mSelectedColor
 
@@ -138,10 +136,10 @@ class EditScreenViewModel @Inject constructor(
         mSelectedColor.value = DEFAULT_COLOR
     }
 
-    fun selectCategory(id: Int) {
+    fun selectCollection(id: Int) {
         viewModelScope.launch {
             val category = collectionsRepository.getCollectionById(id)
-            mSelectedCategory.value = category
+            mSelectedCollection.value = category
         }
     }
 
@@ -160,7 +158,7 @@ class EditScreenViewModel @Inject constructor(
                         repository = repository,
                         isPinned = isPinned.value,
                         isFavorite = isFavorite.value,
-                        categoryId = mSelectedCategory.value.id,
+                        categoryId = mSelectedCollection.value.id,
                         color = mSelectedColor.value
                     ).execute()
                 } else {
@@ -170,7 +168,7 @@ class EditScreenViewModel @Inject constructor(
                         repository = repository,
                         isPinned = isPinned.value,
                         isFavorite = isFavorite.value,
-                        categoryId = mSelectedCategory.value.id,
+                        categoryId = mSelectedCollection.value.id,
                         color = mSelectedColor.value
                     ).execute()
                 }
@@ -192,7 +190,7 @@ class EditScreenViewModel @Inject constructor(
                     repository = repository,
                     isPinned = isPinned.value,
                     isFavorite = isFavorite.value,
-                    collectionId = mSelectedCategory.value.id,
+                    collectionId = mSelectedCollection.value.id,
                     color = mSelectedColor.value
                 ).execute()
 
