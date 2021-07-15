@@ -6,7 +6,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavBackStackEntry
 import com.mnuel.dev.notes.model.repositories.CollectionsRepository
-import com.mnuel.dev.notes.model.room.entities.Collection
 import com.mnuel.dev.notes.ui.components.DrawerSect
 import com.mnuel.dev.notes.ui.navigation.Routes
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -21,30 +20,14 @@ class NotesAppViewModel @Inject constructor(
     repository: CollectionsRepository,
 ) : ViewModel() {
 
-    private val mDefaultCollections = MutableStateFlow(emptyList<Collection>())
+    private val mCollectionsSections = MutableStateFlow(emptyList<DrawerSect>())
 
-    private val mDrawerSections = MutableStateFlow(emptyList<DrawerSect>())
-
-    val drawerSections: StateFlow<List<DrawerSect>> = mDrawerSections
+    val collectionSections: StateFlow<List<DrawerSect>> = mCollectionsSections
 
     init {
         viewModelScope.launch {
             val collections = repository.getDefaultCollections()
-            mDrawerSections.value = buildList {
-                add(
-                    DrawerSect(
-                        route = Routes.HOME,
-                        icon = Icons.Outlined.Home,
-                        title = "Inicio"
-                    )
-                )
-                add(
-                    DrawerSect(
-                        route = Routes.FAVORITES,
-                        icon = Icons.Outlined.Favorite,
-                        title = "Favorites"
-                    )
-                )
+            mCollectionsSections.value = buildList {
                 collections.forEach {
                     add(
                         DrawerSect(
@@ -61,27 +44,6 @@ class NotesAppViewModel @Inject constructor(
                         title = "Create New"
                     )
                 )
-                add(
-                    DrawerSect(
-                        route = Routes.CREATE_BACKUP,
-                        icon = Icons.Outlined.SettingsBackupRestore,
-                        title = "Backup & Restore"
-                    )
-                )
-                add(
-                    DrawerSect(
-                        route = Routes.TRASH,
-                        icon = Icons.Outlined.Delete,
-                        title = "Trash"
-                    )
-                )
-                add(
-                    DrawerSect(
-                        route = Routes.SETTINGS,
-                        icon = Icons.Outlined.Settings,
-                        title = "Settings"
-                    )
-                )
             }
         }
     }
@@ -93,9 +55,9 @@ class NotesAppViewModel @Inject constructor(
         return when(route) {
             Routes.COLLECTIONS -> {
                 route = "$route/$collectionId"
-                mDrawerSections.value.find { it.route == route }
+                mCollectionsSections.value.find { it.route == route }
             }
-            else -> mDrawerSections.value.find { it.route == route }
+            else -> mCollectionsSections.value.find { it.route == route }
         }
     }
 

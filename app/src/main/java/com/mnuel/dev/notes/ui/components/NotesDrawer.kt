@@ -29,7 +29,9 @@ data class DrawerSect(
 fun DrawerContent(
     title: String,
     selected: DrawerSect? = null,
-    sections: List<DrawerSect>,
+    topSections: List<DrawerSect> = emptyList(),
+    bottomSections: List<DrawerSect> = emptyList(),
+    collections: List<DrawerSect> = emptyList(),
     onNavigation: (DrawerSect) -> Unit = {},
 ) {
     Text(
@@ -48,7 +50,7 @@ fun DrawerContent(
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
 
-        sections.take(2).forEach {
+        topSections.forEach {
             DrawerItem(
                 icon = it.icon,
                 text = it.title,
@@ -73,7 +75,7 @@ fun DrawerContent(
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
 
-        sections.drop(2).take(4).forEach {
+        collections.forEach {
             DrawerItem(
                 icon = it.icon,
                 text = it.title,
@@ -90,7 +92,7 @@ fun DrawerContent(
             .padding(all = 8.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        sections.drop(6).forEach {
+        bottomSections.forEach {
             DrawerItem(
                 icon = it.icon,
                 text = it.title,
