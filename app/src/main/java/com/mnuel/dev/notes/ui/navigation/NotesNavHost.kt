@@ -137,6 +137,7 @@ fun NotesNavHost(
                         viewModel.selectCollection(it.id)
                         editScreenViewModel.selectCollection(it.id)
                     },
+                    onDeleteCollection = {viewModel.deleteCollection(it)},
                     uiState = uiState
                 )
             }
