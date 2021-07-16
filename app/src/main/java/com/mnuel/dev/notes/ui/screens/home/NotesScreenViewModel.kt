@@ -126,7 +126,7 @@ class NotesScreenViewModel @Inject constructor(
                     content = note.content,
                     isFavorite = true,
                     isPinned = note.isPinned,
-                    categoryId = note.collectionId,
+                    collectionId = note.collectionId,
                     color = note.color,
                     repository = repository,
                 ).execute()
@@ -144,7 +144,7 @@ class NotesScreenViewModel @Inject constructor(
                     content = note.content,
                     isFavorite = false,
                     isPinned = note.isPinned,
-                    categoryId = note.collectionId,
+                    collectionId = note.collectionId,
                     color = note.color,
                     repository = repository,
                 ).execute()

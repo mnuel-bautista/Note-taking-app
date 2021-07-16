@@ -11,7 +11,7 @@ class CreateNoteUseCase(
     private val isPinned: Boolean,
     private val isFavorite: Boolean,
     private val repository: NotesRepository,
-    private val categoryId: Int,
+    private val collectionId: Int,
     private val color: Int,
 ) : BaseUseCase<Unit> {
 
@@ -24,7 +24,7 @@ class CreateNoteUseCase(
             isFavorite = isFavorite,
             isPinned = isPinned,
             color = color,
-            collectionId = categoryId,
+            collectionId = collectionId,
             creationDate = date,
             modificationDate = date,
         )
