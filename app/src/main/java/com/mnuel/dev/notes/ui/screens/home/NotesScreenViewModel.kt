@@ -40,9 +40,6 @@ class NotesScreenViewModel @Inject constructor(
      * Title shown in the app bar for a collection.
      * */
     var title: String = ""
-
-    private val mNotes: MutableStateFlow<List<Note>> = MutableStateFlow(emptyList())
-
     /**
      * All notes, including pinned notes.
      * */

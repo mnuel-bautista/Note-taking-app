@@ -69,6 +69,7 @@ class NotesRepositoryImpl(private val notesDao: NoteDao) : NotesRepository {
     override fun getAllNotesSorted(field: Int, asc: Boolean): Flow<List<Note>> {
 
         val queryBuilder = SupportSQLiteQueryBuilder.builder("notes")
+            .selection("isDeleted = ?", arrayOf(0))
 
         val order = if(asc) "ASC" else "DESC"
         when (field) {

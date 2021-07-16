@@ -20,7 +20,7 @@ class FavoriteNotesRepository(
 
     override fun getAllNotesSorted(field: Int, asc: Boolean): Flow<List<Note>> {
         val queryBuilder = SupportSQLiteQueryBuilder.builder("notes")
-            .selection("isFavorite = ?", arrayOf(1))
+            .selection("isFavorite = ? AND isDeleted = ?", arrayOf(1, 0))
 
         val order = if(asc) "ASC" else "DESC"
         when (field) {

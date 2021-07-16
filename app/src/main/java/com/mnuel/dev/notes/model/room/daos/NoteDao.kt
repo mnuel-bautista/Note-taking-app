@@ -18,7 +18,7 @@ abstract class NoteDao {
     @Query("SELECT * FROM notes WHERE isDeleted = 0 ORDER BY datetime(creationDate) DESC")
     abstract fun getAllNotes(): Flow<List<Note>>
 
-    @Query("SELECT * FROM notes WHERE isFavorite = 1")
+    @Query("SELECT * FROM notes WHERE isFavorite = 1 AND isDeleted = 0")
     abstract fun getFavoriteNotes(): Flow<List<Note>>
 
     @Query("SELECT * FROM notes WHERE isDeleted = 1")
