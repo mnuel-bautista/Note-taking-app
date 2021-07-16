@@ -57,11 +57,13 @@ fun TrashScreen(
                 title = {},
                 actions = {
 
-                    TopAppBarAction(
-                        visible = trashScreenState.appBarState == TopAppBarState.DEFAULT,
-                        icon = Icons.Outlined.DeleteForever,
-                        onClick = onDeleteAllPermanently
-                    )
+                    if(trashScreenState.notes.isNotEmpty()) {
+                        TopAppBarAction(
+                            visible = trashScreenState.appBarState == TopAppBarState.DEFAULT,
+                            icon = Icons.Outlined.DeleteForever,
+                            onClick = onDeleteAllPermanently
+                        )
+                    }
 
                     TopAppBarAction(
                         visible = trashScreenState.appBarState == TopAppBarState.CONTEXTUAL,
