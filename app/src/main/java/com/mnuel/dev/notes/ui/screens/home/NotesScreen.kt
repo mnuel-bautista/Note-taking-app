@@ -138,7 +138,9 @@ fun NotesScreen(
                 contentPadding = PaddingValues(all = 8.dp)
             ) {
                 item {
-                    Text(if(pinnedNotes.isNotEmpty()) "Pinned notes" else "")
+                    if(pinnedNotes.isNotEmpty()) {
+                        Text("Pinned notes")
+                    }
                 }
                 items(pinnedNotes) {
                     NoteListItem(
@@ -153,7 +155,9 @@ fun NotesScreen(
                     )
                 }
                 item {
-                    Text(if(notes.isNotEmpty()) "Notes" else "")
+                    if(notes.isNotEmpty()) {
+                        Text("Notes")
+                    }
                 }
                 items(notes, key = { "$it" }) {
                     NoteListItem(
