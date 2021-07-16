@@ -11,13 +11,13 @@ class UpdateNoteUseCase(
     private val isPinned: Boolean,
     private val isFavorite: Boolean,
     private val repository: NotesRepository,
-    private val categoryId: Int,
+    private val collectionId: Int,
     private val color: Int,
 ): BaseUseCase<Unit> {
 
     override suspend fun execute() {
         val modificationDate = OffsetDateTime.now()
-        repository.update(id, title, content, isFavorite, isPinned, color,  categoryId, modificationDate)
+        repository.update(id, title, content, isFavorite, isPinned, color,  collectionId, modificationDate)
     }
 
 }
