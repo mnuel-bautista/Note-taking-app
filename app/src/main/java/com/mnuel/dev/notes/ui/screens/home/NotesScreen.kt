@@ -72,11 +72,13 @@ fun NotesScreen(
     val showUndoMessage = uiState.showUndoMessage
     val isMenuExpanded = uiState.isMenuExpanded
 
-    LaunchedEffect(key1 = showUndoMessage) {
-        if (showUndoMessage) {
+
+    if (showUndoMessage) {
+        LaunchedEffect(Unit) {
             scaffoldState.snackbarHostState.showSnackbar("The note has been deleted")
         }
     }
+
 
     ModalBottomSheetLayout(sheetContent = {
         Column {
@@ -138,7 +140,7 @@ fun NotesScreen(
                 contentPadding = PaddingValues(all = 8.dp)
             ) {
                 item {
-                    if(pinnedNotes.isNotEmpty()) {
+                    if (pinnedNotes.isNotEmpty()) {
                         Text("Pinned notes")
                     }
                 }
@@ -155,7 +157,7 @@ fun NotesScreen(
                     )
                 }
                 item {
-                    if(notes.isNotEmpty()) {
+                    if (notes.isNotEmpty()) {
                         Text("Notes")
                     }
                 }
