@@ -44,7 +44,7 @@ class EditScreenViewModel @Inject constructor(
     private val mModificationDate: MutableStateFlow<String> = MutableStateFlow("")
 
     private val mSelectedCollection: MutableStateFlow<Collection> =
-        MutableStateFlow(Collection(1, "School"))
+        MutableStateFlow(Collection(1, "Notes"))
 
     private val mCategories: MutableStateFlow<List<Collection>> = MutableStateFlow(emptyList())
 
@@ -165,7 +165,7 @@ class EditScreenViewModel @Inject constructor(
                         repository = repository,
                         isPinned = isPinned.value,
                         isFavorite = isFavorite.value,
-                        categoryId = mSelectedCollection.value.id,
+                        collectionId = mSelectedCollection.value.id,
                         color = mSelectedColor.value
                     ).execute()
                 } else {
@@ -175,7 +175,7 @@ class EditScreenViewModel @Inject constructor(
                         repository = repository,
                         isPinned = isPinned.value,
                         isFavorite = isFavorite.value,
-                        categoryId = mSelectedCollection.value.id,
+                        collectionId = mSelectedCollection.value.id,
                         color = mSelectedColor.value
                     ).execute()
                 }
