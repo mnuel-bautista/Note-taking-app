@@ -22,6 +22,7 @@ import com.mnuel.dev.notes.model.room.entities.Note
 import com.mnuel.dev.notes.ui.screens.home.NoteScreenState.Companion.contextMenuItems
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collect
@@ -188,7 +189,11 @@ class NotesScreenViewModel @Inject constructor(
     }
 
     fun showUndoMessage() {
-        mState.value = mState.value.copy(showUndoMessage = true)
+        viewModelScope.launch {
+            mState.value = mState.value.copy(showUndoMessage = true)
+            delay(2000)
+            mState.value = mState.value.copy(showUndoMessage = false)
+        }
     }
 
     fun sortAlphabetically() {
