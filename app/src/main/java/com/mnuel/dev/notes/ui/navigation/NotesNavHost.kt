@@ -89,7 +89,7 @@ fun NotesNavHost(
                 onEvent = { event ->
                     handleNoteScreenEvents(navController, viewModel, uiState, context, event)
                 },
-                title = viewModel.title,
+                title = uiState.title,
                 uiState = uiState,
                 onNavigation = onNavigationIconClick,
             )

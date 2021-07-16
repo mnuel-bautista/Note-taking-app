@@ -36,10 +36,7 @@ class NotesScreenViewModel @Inject constructor(
     private val collectionsRepository: CollectionsRepository,
 ) : ViewModel() {
 
-    /**
-     * Title shown in the app bar for a collection.
-     * */
-    var title: String = ""
+
     /**
      * All notes, including pinned notes.
      * */
@@ -67,7 +64,8 @@ class NotesScreenViewModel @Inject constructor(
             val collectionId = savedStateHandle.get<Int>("collectionId")
             if (collectionId != null) {
                 val collection = collectionsRepository.getCollectionById(collectionId)
-                title = collection.description
+                val title = collection.description
+                mState.value = mState.value.copy(title = title)
             }
         }
     }
@@ -224,6 +222,7 @@ class NotesScreenViewModel @Inject constructor(
 data class NoteScreenState(
     val selection: Note? = null,
     val notes: List<Note> = emptyList(),
+    val title: String = "",
     val pinnedNotes: List<Note> = emptyList(),
     val showUndoMessage: Boolean = false,
     val contextMenuItems: List<ContextMenuItem> = NoteScreenState.contextMenuItems,
