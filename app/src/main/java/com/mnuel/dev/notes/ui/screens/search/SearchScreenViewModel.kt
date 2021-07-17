@@ -41,7 +41,7 @@ class SearchScreenViewModel @Inject constructor(
         searchJob?.cancel()
 
         searchJob = viewModelScope.launch {
-            repository.search(query).collect {
+            repository.search(query.trim()).collect {
                 mSearchResult.value = it
             }
         }
