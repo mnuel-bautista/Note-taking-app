@@ -1,5 +1,7 @@
 package com.mnuel.dev.notes.ui.screens.home
 
+import androidx.annotation.IntegerRes
+import androidx.annotation.StringRes
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.*
 import androidx.compose.material.icons.rounded.PushPin
@@ -10,6 +12,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.mnuel.dev.notes.R
 import com.mnuel.dev.notes.domain.usecases.*
 import com.mnuel.dev.notes.domain.usecases.GetNotesUseCase.Companion.SORT_ALPHABETICALLY
 import com.mnuel.dev.notes.domain.usecases.GetNotesUseCase.Companion.SORT_CREATED_ASC
@@ -87,12 +90,16 @@ class NotesScreenViewModel @Inject constructor(
         if (note != null) {
             val items = contextMenuItems.toMutableList()
             if (note.isFavorite) {
-                items[3] = ContextMenuItem(Icons.Outlined.Favorite, "Remove from favorites",
-                    HomeScreenEvent.RemoveFavorite)
+                items[3] = ContextMenuItem(
+                    Icons.Outlined.Favorite, "Remove from favorites",
+                    HomeScreenEvent.RemoveFavorite
+                )
             }
             if (note.isPinned) {
-                items[4] = ContextMenuItem(Icons.Rounded.PushPin, "Unpin Note",
-                    HomeScreenEvent.UnpinNote)
+                items[4] = ContextMenuItem(
+                    Icons.Rounded.PushPin, "Unpin Note",
+                    HomeScreenEvent.UnpinNote
+                )
             }
 
             mState.value = mState.value.copy(selection = note, contextMenuItems = items)
@@ -198,14 +205,28 @@ class NotesScreenViewModel @Inject constructor(
 
     fun sortAlphabetically() {
         sortNotes(SORT_ALPHABETICALLY)
+        mState.value = mState.value.copy(sortedBy = Sort.SortAlphabetically)
     }
 
     fun sortByModified(asc: Boolean = true) {
-        if (asc) sortNotes(SORT_MODIFIED_ASC) else sortNotes(SORT_MODIFIED_DSC)
+        if (asc) {
+            sortNotes(SORT_MODIFIED_ASC)
+            mState.value = mState.value.copy(sortedBy = Sort.SortByModifiedDateAsc)
+        } else {
+            sortNotes(SORT_MODIFIED_DSC)
+            mState.value = mState.value.copy(sortedBy = Sort.SortByModifiedDateDsc)
+        }
+
     }
 
     fun sortByCreated(asc: Boolean = true) {
-        if (asc) sortNotes(SORT_CREATED_ASC) else sortNotes(SORT_CREATED_DSC)
+        if (asc) {
+            sortNotes(SORT_CREATED_ASC)
+            mState.value = mState.value.copy(sortedBy = Sort.SortByCreationDateAsc)
+        } else {
+            sortNotes(SORT_CREATED_DSC)
+            mState.value = mState.value.copy(sortedBy = Sort.SortByCreationDateDsc)
+        }
     }
 
     private fun sortNotes(sortMethod: Int) {
@@ -231,6 +252,7 @@ data class NoteScreenState(
     val pinnedNotes: List<Note> = emptyList(),
     val showUndoMessage: Boolean = false,
     val contextMenuItems: List<ContextMenuItem> = NoteScreenState.contextMenuItems,
+    val sortedBy: Sort = Sort.SortByCreationDateDsc,
 ) {
 
     var isMenuExpanded: Boolean by mutableStateOf(false)
@@ -263,3 +285,11 @@ data class ContextMenuItem(
     val description: String,
     val event: HomeScreenEvent,
 )
+
+enum class Sort(@StringRes val title: Int) {
+    SortByCreationDateDsc(R.string.sort_created_newest),
+    SortByCreationDateAsc(R.string.sort_created_oldest),
+    SortByModifiedDateAsc(R.string.sort_modified_oldest),
+    SortByModifiedDateDsc(R.string.sort_modified_newest),
+    SortAlphabetically(R.string.sort_alphabetically),
+}

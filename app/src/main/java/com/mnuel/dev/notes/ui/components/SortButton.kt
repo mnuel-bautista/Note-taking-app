@@ -9,6 +9,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import com.mnuel.dev.notes.ui.screens.home.HomeScreenEvent
 import com.mnuel.dev.notes.ui.screens.home.HomeScreenEvent.*
@@ -18,6 +20,8 @@ import com.mnuel.dev.notes.ui.screens.home.Sort.*
 @Composable
 fun SortButton(
     expanded: Boolean = false,
+    items: List<Sort>,
+    selected: Sort,
     onClick: () -> Unit,
     onDismiss: () -> Unit,
     onSort: (SortEvent) -> Unit
@@ -28,23 +32,13 @@ fun SortButton(
         }
 
         DropdownMenu(expanded = expanded, onDismissRequest = onDismiss) {
-            DropdownMenuItem(onClick = { onSort(SortEvent(SortByCreationDateAsc)) }) {
-                Text("Created(Oldest)")
-            }
-            DropdownMenuItem(onClick = { onSort(SortEvent(SortByCreationDateDsc)) }) {
-                Text("Created(Newest)")
-            }
-            DropdownMenuItem(onClick = { onSort(SortEvent(SortByModifiedDateAsc))}) {
-                Text("Modified(Oldest)")
-            }
-            DropdownMenuItem(onClick = { onSort(SortEvent(SortByModifiedDateDsc))}) {
-                Text("Modified(Newest)")
-            }
-            DropdownMenuItem(onClick = { onSort(SortEvent(SortAlphabetically))}) {
-                Text("Alphabetically")
+            items.forEach {
+                DropdownMenuItem(onClick = { onSort(SortEvent(it)) }) {
+                    Text(modifier = Modifier.weight(1f), text = stringResource(id = it.title))
+                    RadioButton(selected = it == selected, onClick = { onSort(SortEvent(it)) })
+                }
             }
         }
-
     }
 }
 
@@ -53,6 +47,13 @@ fun SortButton(
 fun SortButtonPreview() {
     Scaffold {
         var expanded by remember { mutableStateOf(false) }
-        SortButton(expanded, onClick = { expanded = true }, onDismiss = { expanded = false }, {})
+        SortButton(
+            expanded,
+            Sort.values().toList(),
+            selected = Sort.SortAlphabetically,
+            onClick = { expanded = true },
+            onDismiss = { expanded = false },
+            {},
+        )
     }
 }

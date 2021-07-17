@@ -4,4 +4,9 @@
     <string name="note_content">Write your note...</string>
     <string name="home">Home</string>
     <string name="favorites_screen">Favorites</string>
+    <string name="sort_alphabetically">Alphabetically</string>
+    <string name="sort_created_oldest">Created(Oldest)</string>
+    <string name="sort_created_newest">Created(Newest)</string>
+    <string name="sort_modified_oldest">Modified(oldest)</string>
+    <string name="sort_modified_newest">Modified(newest)</string>
 </resources>

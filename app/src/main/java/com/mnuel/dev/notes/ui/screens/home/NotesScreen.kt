@@ -42,13 +42,7 @@ sealed class HomeScreenEvent {
     object RemoveFavorite : HomeScreenEvent()
 }
 
-enum class Sort {
-    SortAlphabetically,
-    SortByCreationDateAsc,
-    SortByCreationDateDsc,
-    SortByModifiedDateAsc,
-    SortByModifiedDateDsc,
-}
+
 
 /**
  * @param onNavigation Callback for when the navigation icon is clicked.
@@ -71,6 +65,7 @@ fun NotesScreen(
     val pinnedNotes = uiState.pinnedNotes
     val showUndoMessage = uiState.showUndoMessage
     val isMenuExpanded = uiState.isMenuExpanded
+    val sortedBy = uiState.sortedBy
 
 
     if (showUndoMessage) {
@@ -126,6 +121,8 @@ fun NotesScreen(
                         }
                         SortButton(
                             isMenuExpanded,
+                            items = Sort.values().toList(),
+                            selected = sortedBy,
                             onClick = { uiState.showDropdownMenu() },
                             onDismiss = { uiState.hideDropdownMenu() },
                             onSort = { onEvent(it) }
