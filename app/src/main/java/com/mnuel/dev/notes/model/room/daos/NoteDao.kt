@@ -33,7 +33,7 @@ abstract class NoteDao {
     @Query("SELECT * FROM notes WHERE collectionId = :id")
     abstract fun getNotesByCollection(id: Int): Flow<List<Note>>
 
-    @Query("SELECT * FROM notes WHERE title LIKE '%' || :query || '%'")
+    @Query("SELECT * FROM notes WHERE title LIKE :query || '%'")
     abstract fun search(query: String): Flow<List<Note>>
 
     suspend fun restoreNotes(noteIds: List<Int>) {
