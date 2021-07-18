@@ -19,7 +19,7 @@ import androidx.compose.ui.unit.dp
 import com.mnuel.dev.notes.model.room.entities.Collection
 
 
-@OptIn(ExperimentalFoundationApi::class)
+@OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun CollectionsScreen(
     uiState: CollectionsScreenState = remember { CollectionsScreenState() },
@@ -35,6 +35,8 @@ fun CollectionsScreen(
     val collections = uiState.collections
 
     val isSelectionScreen = uiState.isSelectionScreen
+
+    val createDialogState = rememberBottomDialogState()
 
     var showDialog by remember { mutableStateOf(false) }
 
@@ -60,78 +62,81 @@ fun CollectionsScreen(
         )
     }
 
-
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                navigationIcon = {
-                    IconButton(onClick = onNavigateUp) {
-                        Icon(imageVector = Icons.Outlined.ArrowBack, contentDescription = "")
-                    }
-                },
-                title = {
-                    Text(text = "Categories")
-                },
-                actions = {
-                    IconButton(onClick = { showDialog = true }) {
-                        Icon(imageVector = Icons.Outlined.Add, contentDescription = "")
-                    }
-                }
-            )
-        }
-    ) {
-        Surface {
-            LazyColumn(
-                modifier = Modifier.padding(top = 8.dp),
-            ) {
-                items(
-                    collections,
-                    key = {
-                        if (isSelectionScreen) {
-                            "$it:${it.id == selection?.id}"
-                        } else {
-                            "$it"
+    ModalBottomSheetLayout(sheetContent = { /*TODO*/ }) {
+        Scaffold(
+            topBar = {
+                TopAppBar(
+                    navigationIcon = {
+                        IconButton(onClick = onNavigateUp) {
+                            Icon(imageVector = Icons.Outlined.ArrowBack, contentDescription = "")
+                        }
+                    },
+                    title = {
+                        Text(text = "Categories")
+                    },
+                    actions = {
+                        IconButton(onClick = { showDialog = true }) {
+                            Icon(imageVector = Icons.Outlined.Add, contentDescription = "")
                         }
                     }
+                )
+            }
+        ) {
+            Surface {
+                LazyColumn(
+                    modifier = Modifier.padding(top = 8.dp),
                 ) {
-
-                    var expanded by remember { mutableStateOf(false) }
-
-                    CollectionItem(
-                        selected = it.id == selection?.id,
-                        description = it.description,
-                        onClick = {
+                    items(
+                        collections,
+                        key = {
                             if (isSelectionScreen) {
-                                onSelectCollection(it)
+                                "$it:${it.id == selection?.id}"
                             } else {
-                                onNavigate(it)
+                                "$it"
                             }
-                        },
-                        onLongClick = {
+                        }
+                    ) {
 
-                        },
-                        menu = {
-                            Box {
-                                if(!isSelectionScreen) {
-                                    IconButton(
-                                        onClick = {
-                                            contextMenuCollection = it
-                                            expanded = true
+                        var expanded by remember { mutableStateOf(false) }
+
+                        CollectionItem(
+                            selected = it.id == selection?.id,
+                            description = it.description,
+                            onClick = {
+                                if (isSelectionScreen) {
+                                    onSelectCollection(it)
+                                } else {
+                                    onNavigate(it)
+                                }
+                            },
+                            onLongClick = {
+
+                            },
+                            menu = {
+                                Box {
+                                    if (!isSelectionScreen) {
+                                        IconButton(
+                                            onClick = {
+                                                contextMenuCollection = it
+                                                expanded = true
+                                            }
+                                        ) {
+                                            Icon(
+                                                imageVector = Icons.Outlined.MoreVert,
+                                                contentDescription = ""
+                                            )
                                         }
-                                    ) {
-                                        Icon(imageVector = Icons.Outlined.MoreVert,
-                                            contentDescription = "")
+                                        ListItemDropdownMenu(
+                                            expanded = expanded,
+                                            onDismiss = { expanded = false },
+                                            onDelete = { showDeleteDialog = true },
+                                            onEdit = {},
+                                        )
                                     }
-                                    ListItemDropdownMenu(
-                                        expanded = expanded,
-                                        onDismiss = { expanded = false },
-                                        onDelete = { showDeleteDialog = true },
-                                        onEdit = {},
-                                    )
                                 }
                             }
-                        }
-                    )
+                        )
+                    }
                 }
             }
         }
@@ -139,8 +144,10 @@ fun CollectionsScreen(
 }
 
 
-@ExperimentalFoundationApi
-@OptIn(ExperimentalMaterialApi::class)
+@OptIn(
+    ExperimentalFoundationApi::class,
+    ExperimentalMaterialApi::class
+)
 @Composable
 fun CollectionItem(
     selected: Boolean = false,
@@ -207,6 +214,35 @@ fun CreateCollectionDialog(onCancel: () -> Unit, onAccept: (String) -> Unit) {
 }
 
 @Composable
+fun BottomDialog(
+    state: BottomDialogState,
+    onCancel: () -> Unit,
+    onAccept: () -> Unit
+) {
+    Column(
+        modifier = Modifier.padding(16.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp)
+    ) {
+        TextField(
+            modifier = Modifier.fillMaxWidth(),
+            value = state.text,
+            onValueChange = { state.text = it }
+        )
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.End)
+        ) {
+            TextButton(onClick = onAccept) {
+                Text("CANCEL")
+            }
+            Button(onClick = onCancel) {
+                Text("ACCEPT")
+            }
+        }
+    }
+}
+
+@Composable
 fun DeleteCollectionDialog(onCancel: () -> Unit, onAccept: () -> Unit) {
     AlertDialog(
         modifier = Modifier.fillMaxWidth(.85f),
@@ -244,6 +280,12 @@ fun ListItemDropdownMenu(
     }
 }
 
+
+@Preview
+@Composable
+fun BottomDialogPreview() {
+    BottomDialog(state = rememberBottomDialogState(), onCancel = { /*TODO*/ }, onAccept = {})
+}
 
 @Preview
 @Composable
