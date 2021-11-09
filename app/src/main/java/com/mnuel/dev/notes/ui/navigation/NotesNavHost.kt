@@ -163,15 +163,16 @@ fun NotesNavHost(
             val viewModel = hiltViewModel<CollectionsScreenViewModel>()
 
             val uiState by viewModel.state.collectAsState()
+            val query by viewModel.query
 
             NotebooksScreen(
                 notebooks = uiState.notebooks,
                 onCreateNotebook = { name ->
                     viewModel.createNotebook(name)
                 },
-                onBack = {
-                    navController.popBackStack()
-                }
+                onBack = { navController.popBackStack() },
+                query = query,
+                onSearch = {query ->  viewModel.search(query)}
             )
         }
 

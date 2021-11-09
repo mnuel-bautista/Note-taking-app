@@ -1,5 +1,7 @@
 package com.mnuel.dev.notes.ui.screens.category
 
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.ui.text.toLowerCase
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -27,18 +29,28 @@ class CollectionsScreenViewModel @Inject constructor(
 
     private val isSelectionScreen: MutableStateFlow<Boolean> = MutableStateFlow(false)
 
-    private val mState: MutableStateFlow<CollectionsScreenState> = MutableStateFlow(CollectionsScreenState())
+    private val mState: MutableStateFlow<CollectionsScreenState> =
+        MutableStateFlow(CollectionsScreenState())
+
+    private var allNotebooks: List<Notebook> = emptyList()
+
+    val query = mutableStateOf("")
 
     val state: StateFlow<CollectionsScreenState> = mState
 
     init {
         viewModelScope.launch {
             repository.getAllNotebooks().collect {
-                notebooks.value = it
+                allNotebooks = it
+                search(query.value)
             }
         }
         viewModelScope.launch {
-            combine(notebooks, selection, isSelectionScreen) { categories, selection, isSelectionScreen->
+            combine(
+                notebooks,
+                selection,
+                isSelectionScreen
+            ) { categories, selection, isSelectionScreen ->
                 CollectionsScreenState(categories, selection, isSelectionScreen)
             }.collect { mState.value = it }
         }
@@ -46,7 +58,7 @@ class CollectionsScreenViewModel @Inject constructor(
         val collectionId = savedStateHandle.get<Int>("collectionId")
         isSelectionScreen.value = collectionId != null
 
-        if(collectionId != null)  {
+        if (collectionId != null) {
             viewModelScope.launch {
                 val collection = repository.getNotebooksById(collectionId)
                 selection.value = collection
@@ -78,6 +90,21 @@ class CollectionsScreenViewModel @Inject constructor(
     fun createNotebook(name: String) {
         viewModelScope.launch {
             repository.insert(Notebook(id = 0, description = name))
+        }
+    }
+
+    /**
+     * Change the query so that the notebooks that are returned by the viewmodel contains these query.
+     * */
+    fun search(query: String) {
+        this.query.value = query
+
+        //When the query is blank, return all the notebooks
+        if (query.isBlank()) {
+            notebooks.value = allNotebooks
+        } else {
+            notebooks.value =
+                allNotebooks.filter { it.description.lowercase().startsWith(query.lowercase()) }
         }
     }
 

@@ -39,6 +39,8 @@ data class Notebook(
 fun NotebooksScreen(
     notebooks: List<com.mnuel.dev.notes.model.room.entities.Notebook>,
     onCreateNotebook: (notebook: String) -> Unit,
+    query: String,
+    onSearch: (query: String) -> Unit,
     onBack: () -> Unit,
 ) {
 
@@ -79,7 +81,11 @@ fun NotebooksScreen(
         ) {
             Column {
                 Spacer(Modifier.height(24.dp))
-                SearchBar(modifier = Modifier.padding(horizontal = 16.dp))
+                SearchBar(
+                    modifier = Modifier.padding(horizontal = 16.dp),
+                    query = query,
+                    onQueryChange = onSearch,
+                )
                 LazyVerticalGrid(
                     cells = GridCells.Fixed(2),
                     contentPadding = PaddingValues(horizontal = 16.dp, vertical = 24.dp),
@@ -101,7 +107,8 @@ private fun AppBar(
     onBack: () -> Unit,
 ) {
     Column(
-        modifier = Modifier.height(92.dp)
+        modifier = Modifier
+            .height(92.dp)
             .fillMaxWidth()
     ) {
         TopAppBar(
@@ -136,9 +143,11 @@ private fun AppBar(
 
 @Composable
 private fun SearchBar(
+    query: String,
+    onQueryChange: (String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    var (query, onQueryChange) = remember { mutableStateOf("") }
+
     val placeholder = "Search your notes"
 
     BasicTextField(
@@ -188,7 +197,8 @@ private fun Notebook(
     name: String,
 ) {
     Column(
-        modifier = modifier.width(184.dp)
+        modifier = modifier
+            .width(184.dp)
             .height(76.dp)
             .background(color = Color(0xffE8D9FC).copy(alpha = 0.12f))
             .padding(start = 16.dp, top = 16.dp),
@@ -212,6 +222,8 @@ private fun NotebooksScreenPreview() {
     NotebooksScreen(
         notebooks = emptyList(),
         onCreateNotebook = {},
-        onBack = {}
+        onBack = {},
+        onSearch = {},
+        query = "",
     )
 }
