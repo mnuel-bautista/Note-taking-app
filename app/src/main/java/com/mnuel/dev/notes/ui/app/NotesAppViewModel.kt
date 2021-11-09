@@ -5,7 +5,7 @@ import androidx.compose.material.icons.outlined.*
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavBackStackEntry
-import com.mnuel.dev.notes.model.repositories.CollectionsRepository
+import com.mnuel.dev.notes.model.repositories.NotebooksRepository
 import com.mnuel.dev.notes.ui.components.DrawerSect
 import com.mnuel.dev.notes.ui.navigation.Routes
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -17,7 +17,7 @@ import javax.inject.Inject
 @OptIn(ExperimentalStdlibApi::class)
 @HiltViewModel
 class NotesAppViewModel @Inject constructor(
-    repository: CollectionsRepository,
+    repository: NotebooksRepository,
 ) : ViewModel() {
 
     private val mCollectionsSections = MutableStateFlow(emptyList<DrawerSect>())
@@ -26,7 +26,7 @@ class NotesAppViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            val collections = repository.getDefaultCollections()
+            val collections = repository.getDefaultNotebooks()
             mCollectionsSections.value = buildList {
                 collections.forEach {
                     add(

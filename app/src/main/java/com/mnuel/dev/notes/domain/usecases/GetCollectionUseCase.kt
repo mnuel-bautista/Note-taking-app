@@ -1,7 +1,7 @@
 package com.mnuel.dev.notes.domain.usecases
 
 import com.mnuel.dev.notes.domain.BaseUseCase
-import com.mnuel.dev.notes.model.repositories.CollectionsRepository
+import com.mnuel.dev.notes.model.repositories.NotebooksRepository
 import com.mnuel.dev.notes.model.room.entities.Notebook
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
@@ -11,13 +11,13 @@ import kotlinx.coroutines.flow.map
  * */
 class GetCollectionUseCase(
     private val collectionId: Int,
-    private val repository: CollectionsRepository,
+    private val repository: NotebooksRepository,
 ): BaseUseCase<Flow<Notebook?>> {
 
     override suspend fun execute(): Flow<Notebook> {
-        return repository.getCollectionByIdFlow(collectionId)
+        return repository.getNotebooksByIdFlow(collectionId)
             .map {
-                val notebook: Notebook = it ?: repository.getCollectionById(1)
+                val notebook: Notebook = it ?: repository.getNotebooksById(1)
                 notebook
             }
     }

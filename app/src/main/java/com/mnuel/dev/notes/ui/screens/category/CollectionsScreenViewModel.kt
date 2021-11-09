@@ -5,7 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.mnuel.dev.notes.domain.usecases.DeleteCollectionUseCase
 import com.mnuel.dev.notes.domain.usecases.SaveCollectionUseCase
-import com.mnuel.dev.notes.model.repositories.CollectionsRepository
+import com.mnuel.dev.notes.model.repositories.NotebooksRepository
 import com.mnuel.dev.notes.model.room.entities.Notebook
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -18,12 +18,12 @@ import javax.inject.Inject
 @HiltViewModel
 class CollectionsScreenViewModel @Inject constructor(
     private val savedStateHandle: SavedStateHandle,
-    private val repository: CollectionsRepository,
+    private val repository: NotebooksRepository,
 ) : ViewModel() {
 
     private val selection: MutableStateFlow<Notebook?> = MutableStateFlow(null)
 
-    private val categories: MutableStateFlow<List<Notebook>> = MutableStateFlow(emptyList())
+    private val notebooks: MutableStateFlow<List<Notebook>> = MutableStateFlow(emptyList())
 
     private val isSelectionScreen: MutableStateFlow<Boolean> = MutableStateFlow(false)
 
@@ -33,12 +33,12 @@ class CollectionsScreenViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            repository.getCollections().collect {
-                categories.value = it
+            repository.getAllNotebooks().collect {
+                notebooks.value = it
             }
         }
         viewModelScope.launch {
-            combine(categories, selection, isSelectionScreen) { categories, selection, isSelectionScreen->
+            combine(notebooks, selection, isSelectionScreen) { categories, selection, isSelectionScreen->
                 CollectionsScreenState(categories, selection, isSelectionScreen)
             }.collect { mState.value = it }
         }
@@ -48,27 +48,27 @@ class CollectionsScreenViewModel @Inject constructor(
 
         if(collectionId != null)  {
             viewModelScope.launch {
-                val collection = repository.getCollectionById(collectionId)
+                val collection = repository.getNotebooksById(collectionId)
                 selection.value = collection
             }
         }
     }
 
-    fun selectCollection(id: Int) {
+    fun selectNotebook(id: Int) {
         viewModelScope.launch {
-            val cat = repository.getCollectionById(id)
+            val cat = repository.getNotebooksById(id)
             selection.value = cat
         }
     }
 
-    fun saveCollection(collection: String) {
+    fun saveNotebook(collection: String) {
         viewModelScope.launch {
             SaveCollectionUseCase(collection, repository)
                 .execute()
         }
     }
 
-    fun deleteCollection(notebook: Notebook) {
+    fun deleteNotebook(notebook: Notebook) {
         viewModelScope.launch {
             DeleteCollectionUseCase(notebook, repository)
                 .execute()

@@ -3,7 +3,7 @@ package com.mnuel.dev.notes.screens
 import androidx.compose.ui.test.*
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import com.mnuel.dev.notes.MainActivity
-import com.mnuel.dev.notes.model.repositories.CollectionsRepository
+import com.mnuel.dev.notes.model.repositories.NotebooksRepository
 import com.mnuel.dev.notes.model.repositories.NotesRepository
 import com.mnuel.dev.notes.model.room.entities.Notebook
 import dagger.hilt.android.testing.HiltAndroidRule
@@ -29,15 +29,15 @@ class EditScreenTest {
     lateinit var notesRepository: NotesRepository
 
     @Inject
-    lateinit var collectionsRepository: CollectionsRepository
+    lateinit var notebooksRepository: NotebooksRepository
 
     @Before
     fun setUp() = runBlocking {
         hiltRule.inject()
 
-        collectionsRepository.insert(Notebook(1, "Work"))
-        collectionsRepository.insert(Notebook(2, "School"))
-        collectionsRepository.insert(Notebook(3, "Math"))
+        notebooksRepository.insert(Notebook(1, "Work"))
+        notebooksRepository.insert(Notebook(2, "School"))
+        notebooksRepository.insert(Notebook(3, "Math"))
     }
 
     @Test

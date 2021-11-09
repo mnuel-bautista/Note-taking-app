@@ -1,10 +1,8 @@
 package com.mnuel.dev.notes.di
 
 import android.content.Context
-import com.mnuel.dev.notes.model.repositories.CollectionsRepository
-import com.mnuel.dev.notes.model.repositories.CollectionsRepositoryImpl
-import com.mnuel.dev.notes.model.repositories.NotesRepository
-import com.mnuel.dev.notes.model.repositories.NotesRepositoryImpl
+import com.mnuel.dev.notes.model.repositories.NotebooksRepository
+import com.mnuel.dev.notes.model.repositories.NotebooksRepositoryImpl
 import com.mnuel.dev.notes.model.room.NotesDatabase
 import com.mnuel.dev.notes.model.room.daos.CollectionDao
 import com.mnuel.dev.notes.model.room.daos.NoteDao
@@ -32,8 +30,8 @@ class AppModule {
 
     @Singleton
     @Provides
-    fun providesCategoriesRepository(dao: CollectionDao): CollectionsRepository {
-        return CollectionsRepositoryImpl(dao)
+    fun providesCategoriesRepository(dao: CollectionDao): NotebooksRepository {
+        return NotebooksRepositoryImpl(dao)
     }
 
     @Provides

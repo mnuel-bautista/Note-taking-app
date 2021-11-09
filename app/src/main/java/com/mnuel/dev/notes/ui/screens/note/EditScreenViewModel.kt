@@ -8,7 +8,7 @@ import com.mnuel.dev.notes.domain.usecases.CopyNoteUseCase
 import com.mnuel.dev.notes.domain.usecases.CreateNoteUseCase
 import com.mnuel.dev.notes.domain.usecases.GetCollectionUseCase
 import com.mnuel.dev.notes.domain.usecases.UpdateNoteUseCase
-import com.mnuel.dev.notes.model.repositories.CollectionsRepository
+import com.mnuel.dev.notes.model.repositories.NotebooksRepository
 import com.mnuel.dev.notes.model.repositories.NotesRepository
 import com.mnuel.dev.notes.model.room.entities.Notebook
 import com.mnuel.dev.notes.ui.theme.DEFAULT_COLOR
@@ -26,7 +26,7 @@ import javax.inject.Inject
 class EditScreenViewModel @Inject constructor(
     private val savedStateHandle: SavedStateHandle,
     private val repository: NotesRepository,
-    private val collectionsRepository: CollectionsRepository,
+    private val notebooksRepository: NotebooksRepository,
 ) : ViewModel() {
 
     private var mCurrentNoteId: Int = NEW_NOTE
@@ -88,7 +88,7 @@ class EditScreenViewModel @Inject constructor(
         if (mCurrentNoteId != NEW_NOTE) {
             viewModelScope.launch {
                 val note = repository.getNoteById(mCurrentNoteId)
-                val collection = collectionsRepository.getCollectionById(note.collectionId)
+                val collection = notebooksRepository.getNotebooksById(note.collectionId)
                 mTitle.value = note.title
                 mContent.value = note.content
                 mIsFavorite.value = note.isFavorite
@@ -144,7 +144,7 @@ class EditScreenViewModel @Inject constructor(
     fun selectCollection(id: Int) {
         collectionJob?.cancel()
         collectionJob = viewModelScope.launch {
-            GetCollectionUseCase(id, collectionsRepository)
+            GetCollectionUseCase(id, notebooksRepository)
                 .execute()
                 .collect { mSelectedNotebook.value = it }
         }

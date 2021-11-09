@@ -1,7 +1,6 @@
 package com.mnuel.dev.notes.ui.navigation
 
 import android.util.Log
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -136,11 +135,11 @@ fun NotesNavHost(
                         navController.navigateUp()
                     },
                     onSelectCollection = {
-                        viewModel.selectCollection(it.id)
+                        viewModel.selectNotebook(it.id)
                         editScreenViewModel.selectCollection(it.id)
                     },
-                    onCreateCollection = { viewModel.saveCollection(it) },
-                    onDeleteCollection = { viewModel.deleteCollection(it) },
+                    onCreateCollection = { viewModel.saveNotebook(it) },
+                    onDeleteCollection = { viewModel.deleteNotebook(it) },
                     uiState = uiState
                 )
             }

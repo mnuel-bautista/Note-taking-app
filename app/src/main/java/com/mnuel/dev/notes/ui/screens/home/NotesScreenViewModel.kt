@@ -1,6 +1,5 @@
 package com.mnuel.dev.notes.ui.screens.home
 
-import androidx.annotation.IntegerRes
 import androidx.annotation.StringRes
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.*
@@ -19,7 +18,7 @@ import com.mnuel.dev.notes.domain.usecases.GetNotesUseCase.Companion.SORT_CREATE
 import com.mnuel.dev.notes.domain.usecases.GetNotesUseCase.Companion.SORT_CREATED_DSC
 import com.mnuel.dev.notes.domain.usecases.GetNotesUseCase.Companion.SORT_MODIFIED_ASC
 import com.mnuel.dev.notes.domain.usecases.GetNotesUseCase.Companion.SORT_MODIFIED_DSC
-import com.mnuel.dev.notes.model.repositories.CollectionsRepository
+import com.mnuel.dev.notes.model.repositories.NotebooksRepository
 import com.mnuel.dev.notes.model.repositories.NotesRepository
 import com.mnuel.dev.notes.model.room.entities.Note
 import com.mnuel.dev.notes.ui.screens.home.NoteScreenState.Companion.contextMenuItems
@@ -37,7 +36,7 @@ import javax.inject.Inject
 class NotesScreenViewModel @Inject constructor(
     private val savedStateHandle: SavedStateHandle,
     private val repository: NotesRepository,
-    private val collectionsRepository: CollectionsRepository,
+    private val notebooksRepository: NotebooksRepository,
 ) : ViewModel() {
 
 
@@ -67,7 +66,7 @@ class NotesScreenViewModel @Inject constructor(
         viewModelScope.launch {
             val collectionId = savedStateHandle.get<Int>("collectionId")
             if (collectionId != null) {
-                val collection = collectionsRepository.getCollectionById(collectionId)
+                val collection = notebooksRepository.getNotebooksById(collectionId)
                 val title = collection.description
                 mState.value = mState.value.copy(title = title)
             }

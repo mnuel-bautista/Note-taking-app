@@ -5,37 +5,37 @@ import com.mnuel.dev.notes.model.room.entities.Notebook
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 
-interface CollectionsRepository {
+interface NotebooksRepository {
 
-    fun getCollections(): Flow<List<Notebook>>
+    fun getAllNotebooks(): Flow<List<Notebook>>
 
-    suspend fun getCollectionById(id: Int): Notebook
+    suspend fun getNotebooksById(id: Int): Notebook
 
-    suspend fun getCollectionByIdFlow(id: Int): Flow<Notebook?>
+    suspend fun getNotebooksByIdFlow(id: Int): Flow<Notebook?>
 
     suspend fun insert(notebook: Notebook)
 
     suspend fun delete(notebook: Notebook)
 
-    suspend fun getDefaultCollections(): List<Notebook>
+    suspend fun getDefaultNotebooks(): List<Notebook>
 
 }
 
-class CollectionsRepositoryImpl(private val collectionDao: CollectionDao):
-    CollectionsRepository {
+class NotebooksRepositoryImpl(private val collectionDao: CollectionDao):
+    NotebooksRepository {
 
-    override fun getCollections(): Flow<List<Notebook>> {
+    override fun getAllNotebooks(): Flow<List<Notebook>> {
         return collectionDao.getAllCollections().map { categories ->
             categories.map { cat -> Notebook(cat.id, cat.description) }
         }
     }
 
-    override suspend fun getCollectionById(id: Int): Notebook {
+    override suspend fun getNotebooksById(id: Int): Notebook {
         val category = collectionDao.getCollectionById(id)
         return Notebook(category.id, category.description)
     }
 
-    override suspend fun getCollectionByIdFlow(id: Int): Flow<Notebook?> {
+    override suspend fun getNotebooksByIdFlow(id: Int): Flow<Notebook?> {
         return collectionDao.getCollectionByIdFlow(id)
     }
 
@@ -47,7 +47,7 @@ class CollectionsRepositoryImpl(private val collectionDao: CollectionDao):
         collectionDao.delete(notebook)
     }
 
-    override suspend fun getDefaultCollections(): List<Notebook> {
+    override suspend fun getDefaultNotebooks(): List<Notebook> {
         return collectionDao.getDefaultCollections()
     }
 
