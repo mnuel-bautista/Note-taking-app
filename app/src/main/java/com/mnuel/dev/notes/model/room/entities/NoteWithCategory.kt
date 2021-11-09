@@ -4,7 +4,7 @@ import androidx.room.Embedded
 import androidx.room.Relation
 
 data class NoteWithCategory(
-    @Embedded val category: Collection,
+    @Embedded val category: Notebook,
     @Relation(
         parentColumn = "id",
         entityColumn = "collectionId",

@@ -6,7 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.mnuel.dev.notes.domain.usecases.DeleteCollectionUseCase
 import com.mnuel.dev.notes.domain.usecases.SaveCollectionUseCase
 import com.mnuel.dev.notes.model.repositories.CollectionsRepository
-import com.mnuel.dev.notes.model.room.entities.Collection
+import com.mnuel.dev.notes.model.room.entities.Notebook
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -21,9 +21,9 @@ class CollectionsScreenViewModel @Inject constructor(
     private val repository: CollectionsRepository,
 ) : ViewModel() {
 
-    private val selection: MutableStateFlow<Collection?> = MutableStateFlow(null)
+    private val selection: MutableStateFlow<Notebook?> = MutableStateFlow(null)
 
-    private val categories: MutableStateFlow<List<Collection>> = MutableStateFlow(emptyList())
+    private val categories: MutableStateFlow<List<Notebook>> = MutableStateFlow(emptyList())
 
     private val isSelectionScreen: MutableStateFlow<Boolean> = MutableStateFlow(false)
 
@@ -68,10 +68,16 @@ class CollectionsScreenViewModel @Inject constructor(
         }
     }
 
-    fun deleteCollection(collection: Collection) {
+    fun deleteCollection(notebook: Notebook) {
         viewModelScope.launch {
-            DeleteCollectionUseCase(collection, repository)
+            DeleteCollectionUseCase(notebook, repository)
                 .execute()
+        }
+    }
+
+    fun createNotebook(name: String) {
+        viewModelScope.launch {
+            repository.insert(Notebook(id = 0, description = name))
         }
     }
 
@@ -81,7 +87,7 @@ class CollectionsScreenViewModel @Inject constructor(
  * @param isSelectionScreen When the screen is used for selecting a collection, this is true.
  * */
 data class CollectionsScreenState(
-    val collections: List<Collection> = emptyList(),
-    val selection: Collection? = null,
+    val notebooks: List<Notebook> = emptyList(),
+    val selection: Notebook? = null,
     val isSelectionScreen: Boolean = false,
 )

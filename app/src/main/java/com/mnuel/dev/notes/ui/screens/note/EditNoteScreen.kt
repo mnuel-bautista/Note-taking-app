@@ -15,7 +15,6 @@ import androidx.compose.material.icons.filled.PushPin
 import androidx.compose.material.icons.outlined.*
 import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.runtime.*
-import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -35,7 +34,7 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.mnuel.dev.notes.R
-import com.mnuel.dev.notes.model.room.entities.Collection
+import com.mnuel.dev.notes.model.room.entities.Notebook
 import com.mnuel.dev.notes.ui.components.ColorPicker
 import com.mnuel.dev.notes.ui.navigation.Routes
 import com.mnuel.dev.notes.ui.screens.home.NotesScreenViewModel
@@ -67,7 +66,7 @@ fun EditNoteScreen(
 
     val notesScreenViewModel = previousEntry?.let { hiltViewModel<NotesScreenViewModel>(it) }
 
-    val selectedCollection by viewModel.selectedCollection.collectAsState()
+    val selectedCollection by viewModel.selectedNotebook.collectAsState()
 
     val selectedColor by viewModel.selectedColor.collectAsState()
 
@@ -96,7 +95,7 @@ fun EditNoteScreen(
     MaterialTheme(colors = colors) {
         CompositionLocalProvider(LocalContentColor provides contentColor) {
             EditNoteScreenContent(
-                selectedCollection = selectedCollection,
+                selectedNotebook = selectedCollection,
                 viewModel = viewModel,
                 onEvent = { event ->
                     when (event) {
@@ -120,7 +119,7 @@ fun EditNoteScreen(
 
 @Composable
 private fun EditNoteScreenContent(
-    selectedCollection: Collection,
+    selectedNotebook: Notebook,
     onEvent: (EditNoteScreenEvent) -> Unit = {},
     viewModel: EditScreenViewModel = hiltViewModel(),
 ) {
@@ -214,7 +213,7 @@ private fun EditNoteScreenContent(
             val context = LocalContext.current
             BottomAppBar(
                 bottomBarState = bottomBarState,
-                selectedCollection = selectedCollection,
+                selectedNotebook = selectedNotebook,
                 onSelectCollection = { onEvent(SelectCollection(it)) },
                 onShareClicked = {
                     val sendIntent: Intent = Intent().apply {
@@ -330,7 +329,7 @@ fun TextField(
 @OptIn(ExperimentalAnimationApi::class)
 @Composable
 fun BottomAppBar(
-    selectedCollection: Collection,
+    selectedNotebook: Notebook,
     bottomBarState: BottomBarState = BottomBarState.DEFAULT,
     onSelectCollection: (Int) -> Unit = {},
     onShareClicked: () -> Unit = {},
@@ -409,7 +408,7 @@ fun BottomAppBar(
                     .clickable(
                         interactionSource = MutableInteractionSource(),
                         indication = rememberRipple(),
-                        onClick = { onSelectCollection(selectedCollection.id) }
+                        onClick = { onSelectCollection(selectedNotebook.id) }
                     ),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
@@ -421,7 +420,7 @@ fun BottomAppBar(
                 )
 
                 Text(
-                    text = selectedCollection.description,
+                    text = selectedNotebook.description,
                     style = MaterialTheme.typography.subtitle1,
                     overflow = TextOverflow.Ellipsis,
                     maxLines = 1,

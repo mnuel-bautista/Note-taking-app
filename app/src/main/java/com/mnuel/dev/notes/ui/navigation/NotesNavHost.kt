@@ -1,6 +1,7 @@
 package com.mnuel.dev.notes.ui.navigation
 
 import android.util.Log
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -21,6 +22,7 @@ import com.mnuel.dev.notes.ui.screens.home.NotesScreenViewModel
 import com.mnuel.dev.notes.ui.screens.note.EditNoteScreen
 import com.mnuel.dev.notes.ui.screens.note.EditNoteScreenEvent
 import com.mnuel.dev.notes.ui.screens.note.EditScreenViewModel
+import com.mnuel.dev.notes.ui.screens.notebooks.NotebooksScreen
 import com.mnuel.dev.notes.ui.screens.search.SearchScreen
 import com.mnuel.dev.notes.ui.screens.search.SearchScreenViewModel
 import com.mnuel.dev.notes.ui.screens.trash.TrashScreen
@@ -163,11 +165,14 @@ fun NotesNavHost(
 
             val uiState by viewModel.state.collectAsState()
 
-            CollectionsScreen(
-                uiState = uiState,
-                onNavigateUp = { navController.navigateUp() },
-                onCreateCollection = { viewModel.saveCollection(it) },
-                onDeleteCollection = { viewModel.deleteCollection(it) },
+            NotebooksScreen(
+                notebooks = uiState.notebooks,
+                onCreateNotebook = { name ->
+                    viewModel.createNotebook(name)
+                },
+                onBack = {
+                    navController.popBackStack()
+                }
             )
         }
 

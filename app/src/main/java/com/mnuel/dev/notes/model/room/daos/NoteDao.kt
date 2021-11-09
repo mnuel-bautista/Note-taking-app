@@ -2,7 +2,6 @@ package com.mnuel.dev.notes.model.room.daos
 
 import androidx.room.*
 import androidx.sqlite.db.SupportSQLiteQuery
-import com.mnuel.dev.notes.model.room.entities.Collection
 import com.mnuel.dev.notes.model.room.entities.Note
 import com.mnuel.dev.notes.model.room.entities.NoteWithCategory
 import kotlinx.coroutines.flow.Flow
@@ -12,7 +11,7 @@ import java.time.OffsetDateTime
 abstract class NoteDao {
 
     @Transaction
-    @Query("SELECT * FROM notes INNER JOIN collections WHERE notes.collectionId = collections.id")
+    @Query("SELECT * FROM notes INNER JOIN notebooks WHERE notes.collectionId = notebooks.id")
     abstract suspend fun getNoteWithCategory(): NoteWithCategory
 
     @Query("SELECT * FROM notes WHERE isDeleted = 0 ORDER BY datetime(creationDate) DESC")

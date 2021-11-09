@@ -1,5 +1,6 @@
 package com.mnuel.dev.notes.ui.screens.category
 
+import android.util.Log
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
@@ -12,11 +13,18 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.mnuel.dev.notes.model.room.entities.Collection
+import androidx.compose.ui.unit.sp
+import com.mnuel.dev.notes.R
+import com.mnuel.dev.notes.model.room.entities.Notebook
+import kotlinx.coroutines.launch
 
 
 @OptIn(ExperimentalMaterialApi::class)
@@ -24,26 +32,28 @@ import com.mnuel.dev.notes.model.room.entities.Collection
 fun CollectionsScreen(
     uiState: CollectionsScreenState = remember { CollectionsScreenState() },
     onNavigateUp: () -> Unit = {},
-    onSelectCollection: (Collection) -> Unit = {},
-    onNavigate: (Collection) -> Unit = {},
+    onSelectCollection: (Notebook) -> Unit = {},
+    onNavigate: (Notebook) -> Unit = {},
     onCreateCollection: (String) -> Unit = {},
-    onDeleteCollection: (Collection) -> Unit = {},
+    onDeleteCollection: (Notebook) -> Unit = {},
 ) {
+
+    val coroutineScope = rememberCoroutineScope()
 
     val selection = uiState.selection
 
-    val collections = uiState.collections
+    val collections = uiState.notebooks
 
     val isSelectionScreen = uiState.isSelectionScreen
 
-    val createDialogState = rememberBottomDialogState()
+    val bottomDialogState = rememberBottomDialogState()
 
     var showDialog by remember { mutableStateOf(false) }
 
     var showDeleteDialog by remember { mutableStateOf(false) }
 
     //The collection that has been selected with the MoreVert icon in a List Item.
-    var contextMenuCollection: Collection? by remember { mutableStateOf(null) }
+    var contextMenuNotebook: Notebook? by remember { mutableStateOf(null) }
 
     if (showDialog) {
         CreateCollectionDialog(
@@ -58,28 +68,24 @@ fun CollectionsScreen(
     if (showDeleteDialog) {
         DeleteCollectionDialog(
             onCancel = { showDeleteDialog = false },
-            onAccept = { contextMenuCollection?.let { onDeleteCollection(it) } }
+            onAccept = { contextMenuNotebook?.let { onDeleteCollection(it) } }
         )
     }
 
-    ModalBottomSheetLayout(sheetContent = { /*TODO*/ }) {
+    ModalBottomSheetLayout(
+        sheetState = bottomDialogState.bottomSheetState,
+        sheetContent = {
+            BottomDialog(
+                bottomDialogState,
+                onCancel = {},
+                onAccept = {})
+        }
+    ) {
         Scaffold(
             topBar = {
-                TopAppBar(
-                    navigationIcon = {
-                        IconButton(onClick = onNavigateUp) {
-                            Icon(imageVector = Icons.Outlined.ArrowBack, contentDescription = "")
-                        }
-                    },
-                    title = {
-                        Text(text = "Categories")
-                    },
-                    actions = {
-                        IconButton(onClick = { showDialog = true }) {
-                            Icon(imageVector = Icons.Outlined.Add, contentDescription = "")
-                        }
-                    }
-                )
+                CollectionsScreenTopBar(
+                    onNavigateUp = onNavigateUp,
+                    onAdd = { coroutineScope.launch { bottomDialogState.show() } })
             }
         ) {
             Surface {
@@ -117,7 +123,7 @@ fun CollectionsScreen(
                                     if (!isSelectionScreen) {
                                         IconButton(
                                             onClick = {
-                                                contextMenuCollection = it
+                                                contextMenuNotebook = it
                                                 expanded = true
                                             }
                                         ) {
@@ -141,6 +147,31 @@ fun CollectionsScreen(
             }
         }
     }
+}
+
+@Composable
+fun CollectionsScreenTopBar(
+    onNavigateUp: () -> Unit,
+    onAdd: () -> Unit,
+) {
+    TopAppBar(
+        modifier = Modifier.height(80.dp),
+        title = {
+            Text(
+                text = stringResource(R.string.your_notebooks),
+                style = MaterialTheme.typography.h5.copy(
+                    letterSpacing = 1.18.sp
+                )
+            )
+        },
+        actions = {
+            IconButton(onClick = onAdd) {
+                Icon(imageVector = Icons.Outlined.Sort, contentDescription = "")
+            }
+        },
+        backgroundColor = MaterialTheme.colors.background,
+        elevation = 0.dp
+    )
 }
 
 
@@ -213,12 +244,25 @@ fun CreateCollectionDialog(onCancel: () -> Unit, onAccept: (String) -> Unit) {
     )
 }
 
+@OptIn(ExperimentalMaterialApi::class, ExperimentalComposeUiApi::class)
 @Composable
 fun BottomDialog(
     state: BottomDialogState,
     onCancel: () -> Unit,
     onAccept: () -> Unit
 ) {
+
+    val focusManager = LocalFocusManager.current
+    val keyboard = LocalSoftwareKeyboardController.current
+
+    SideEffect {
+        if (!state.bottomSheetState.isVisible) {
+            keyboard?.hide()
+            focusManager.clearFocus(force = true)
+            Log.d("CollectionsScreen", "SideEffect")
+        }
+    }
+
     Column(
         modifier = Modifier.padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
@@ -226,6 +270,7 @@ fun BottomDialog(
         TextField(
             modifier = Modifier.fillMaxWidth(),
             value = state.text,
+            label = { Text("Collection name") },
             onValueChange = { state.text = it }
         )
         Row(
@@ -289,8 +334,8 @@ fun BottomDialogPreview() {
 
 @Preview
 @Composable
-fun CreateCollectionDialogPreview() {
-    CreateCollectionDialog(onCancel = {}, {})
+fun CollectionScreenPreview() {
+    CollectionsScreen { }
 }
 
 

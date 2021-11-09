@@ -5,7 +5,7 @@ import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import com.mnuel.dev.notes.MainActivity
 import com.mnuel.dev.notes.model.repositories.CollectionsRepository
 import com.mnuel.dev.notes.model.repositories.NotesRepository
-import com.mnuel.dev.notes.model.room.entities.Collection
+import com.mnuel.dev.notes.model.room.entities.Notebook
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import junit.framework.Assert.assertEquals
@@ -35,9 +35,9 @@ class EditScreenTest {
     fun setUp() = runBlocking {
         hiltRule.inject()
 
-        collectionsRepository.insert(Collection(1, "Work"))
-        collectionsRepository.insert(Collection(2, "School"))
-        collectionsRepository.insert(Collection(3, "Math"))
+        collectionsRepository.insert(Notebook(1, "Work"))
+        collectionsRepository.insert(Notebook(2, "School"))
+        collectionsRepository.insert(Notebook(3, "Math"))
     }
 
     @Test
@@ -58,11 +58,6 @@ class EditScreenTest {
 
         assertEquals("My first note", insertedNote.title)
         assertEquals("My first note content", insertedNote.content)
-    }
-
-    @Test
-    fun `when the phone is in dark mode `() {
-
     }
 
 }

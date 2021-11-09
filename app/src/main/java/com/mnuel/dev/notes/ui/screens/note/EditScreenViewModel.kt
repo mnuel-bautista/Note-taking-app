@@ -10,7 +10,7 @@ import com.mnuel.dev.notes.domain.usecases.GetCollectionUseCase
 import com.mnuel.dev.notes.domain.usecases.UpdateNoteUseCase
 import com.mnuel.dev.notes.model.repositories.CollectionsRepository
 import com.mnuel.dev.notes.model.repositories.NotesRepository
-import com.mnuel.dev.notes.model.room.entities.Collection
+import com.mnuel.dev.notes.model.room.entities.Notebook
 import com.mnuel.dev.notes.ui.theme.DEFAULT_COLOR
 import com.mnuel.dev.notes.ui.theme.noteColors
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -43,10 +43,10 @@ class EditScreenViewModel @Inject constructor(
 
     private val mModificationDate: MutableStateFlow<String> = MutableStateFlow("")
 
-    private val mSelectedCollection: MutableStateFlow<Collection> =
-        MutableStateFlow(Collection(1, "Notes"))
+    private val mSelectedNotebook: MutableStateFlow<Notebook> =
+        MutableStateFlow(Notebook(1, "Notes"))
 
-    private val mCategories: MutableStateFlow<List<Collection>> = MutableStateFlow(emptyList())
+    private val mCategories: MutableStateFlow<List<Notebook>> = MutableStateFlow(emptyList())
 
     private val mShowEmptyFieldsMessage: MutableStateFlow<Boolean> = MutableStateFlow(false)
 
@@ -62,11 +62,11 @@ class EditScreenViewModel @Inject constructor(
 
     val isPinned: StateFlow<Boolean> = mIsPinned
 
-    val selectedCollection: StateFlow<Collection> = mSelectedCollection
+    val selectedNotebook: StateFlow<Notebook> = mSelectedNotebook
 
     val selectedColor: StateFlow<Int> = mSelectedColor
 
-    val categories: StateFlow<List<Collection>> = mCategories
+    val categories: StateFlow<List<Notebook>> = mCategories
 
     val creationDate: StateFlow<String> = mCreationDate
 
@@ -96,7 +96,7 @@ class EditScreenViewModel @Inject constructor(
                 mSelectedColor.value = note.color
                 mCreationDate.value = creationDateFormatter.format(note.creationDate)
                 mModificationDate.value = modificationDateFormatter.format(note.modificationDate)
-                mSelectedCollection.value = collection
+                mSelectedNotebook.value = collection
             }
         } else {
             mCreationDate.value = ""
@@ -146,7 +146,7 @@ class EditScreenViewModel @Inject constructor(
         collectionJob = viewModelScope.launch {
             GetCollectionUseCase(id, collectionsRepository)
                 .execute()
-                .collect { mSelectedCollection.value = it }
+                .collect { mSelectedNotebook.value = it }
         }
     }
 
@@ -165,7 +165,7 @@ class EditScreenViewModel @Inject constructor(
                         repository = repository,
                         isPinned = isPinned.value,
                         isFavorite = isFavorite.value,
-                        collectionId = mSelectedCollection.value.id,
+                        collectionId = mSelectedNotebook.value.id,
                         color = mSelectedColor.value
                     ).execute()
                 } else {
@@ -175,7 +175,7 @@ class EditScreenViewModel @Inject constructor(
                         repository = repository,
                         isPinned = isPinned.value,
                         isFavorite = isFavorite.value,
-                        collectionId = mSelectedCollection.value.id,
+                        collectionId = mSelectedNotebook.value.id,
                         color = mSelectedColor.value
                     ).execute()
                 }
@@ -197,7 +197,7 @@ class EditScreenViewModel @Inject constructor(
                     repository = repository,
                     isPinned = isPinned.value,
                     isFavorite = isFavorite.value,
-                    collectionId = mSelectedCollection.value.id,
+                    collectionId = mSelectedNotebook.value.id,
                     color = mSelectedColor.value
                 ).execute()
 

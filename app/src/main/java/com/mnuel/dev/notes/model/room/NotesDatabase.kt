@@ -7,11 +7,11 @@ import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
 import com.mnuel.dev.notes.model.room.daos.CollectionDao
 import com.mnuel.dev.notes.model.room.daos.NoteDao
-import com.mnuel.dev.notes.model.room.entities.Collection
+import com.mnuel.dev.notes.model.room.entities.Notebook
 import com.mnuel.dev.notes.model.room.entities.Note
 import com.mnuel.dev.notes.model.room.entities.ToDo
 
-@Database(entities = [Note::class, Collection::class, ToDo::class], version = 1, exportSchema = true)
+@Database(entities = [Note::class, Notebook::class, ToDo::class], version = 1, exportSchema = true)
 @TypeConverters(NoteTypeConverters::class)
 abstract class NotesDatabase : RoomDatabase() {
 

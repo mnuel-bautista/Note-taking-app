@@ -1,53 +1,53 @@
 package com.mnuel.dev.notes.model.repositories
 
 import com.mnuel.dev.notes.model.room.daos.CollectionDao
-import com.mnuel.dev.notes.model.room.entities.Collection
+import com.mnuel.dev.notes.model.room.entities.Notebook
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 
 interface CollectionsRepository {
 
-    fun getCollections(): Flow<List<Collection>>
+    fun getCollections(): Flow<List<Notebook>>
 
-    suspend fun getCollectionById(id: Int): Collection
+    suspend fun getCollectionById(id: Int): Notebook
 
-    suspend fun getCollectionByIdFlow(id: Int): Flow<Collection?>
+    suspend fun getCollectionByIdFlow(id: Int): Flow<Notebook?>
 
-    suspend fun insert(collection: Collection)
+    suspend fun insert(notebook: Notebook)
 
-    suspend fun delete(collection: Collection)
+    suspend fun delete(notebook: Notebook)
 
-    suspend fun getDefaultCollections(): List<Collection>
+    suspend fun getDefaultCollections(): List<Notebook>
 
 }
 
 class CollectionsRepositoryImpl(private val collectionDao: CollectionDao):
     CollectionsRepository {
 
-    override fun getCollections(): Flow<List<Collection>> {
+    override fun getCollections(): Flow<List<Notebook>> {
         return collectionDao.getAllCollections().map { categories ->
-            categories.map { cat -> Collection(cat.id, cat.description) }
+            categories.map { cat -> Notebook(cat.id, cat.description) }
         }
     }
 
-    override suspend fun getCollectionById(id: Int): Collection {
+    override suspend fun getCollectionById(id: Int): Notebook {
         val category = collectionDao.getCollectionById(id)
-        return Collection(category.id, category.description)
+        return Notebook(category.id, category.description)
     }
 
-    override suspend fun getCollectionByIdFlow(id: Int): Flow<Collection?> {
+    override suspend fun getCollectionByIdFlow(id: Int): Flow<Notebook?> {
         return collectionDao.getCollectionByIdFlow(id)
     }
 
-    override suspend fun insert(collection: Collection) {
-        collectionDao.insert(Collection(collection.id, collection.description))
+    override suspend fun insert(notebook: Notebook) {
+        collectionDao.insert(Notebook(notebook.id, notebook.description))
     }
 
-    override suspend fun delete(collection: Collection) {
-        collectionDao.delete(collection)
+    override suspend fun delete(notebook: Notebook) {
+        collectionDao.delete(notebook)
     }
 
-    override suspend fun getDefaultCollections(): List<Collection> {
+    override suspend fun getDefaultCollections(): List<Notebook> {
         return collectionDao.getDefaultCollections()
     }
 

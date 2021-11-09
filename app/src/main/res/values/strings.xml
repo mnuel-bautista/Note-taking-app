@@ -9,4 +9,5 @@
     <string name="sort_created_newest">Created(Newest)</string>
     <string name="sort_modified_oldest">Modified(oldest)</string>
     <string name="sort_modified_newest">Modified(newest)</string>
+    <string name="your_notebooks">Your notebooks</string>
 </resources>

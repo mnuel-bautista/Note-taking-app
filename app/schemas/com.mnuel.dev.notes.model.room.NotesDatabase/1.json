@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 1,
-    "identityHash": "e1f0ef28d9c1788bb71dec9c6ba2ea42",
+    "identityHash": "bf661654ff020afd5db2246722f68edc",
     "entities": [
       {
         "tableName": "notes",
@@ -79,7 +79,7 @@
         "foreignKeys": []
       },
       {
-        "tableName": "collections",
+        "tableName": "notebooks",
         "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `description` TEXT NOT NULL)",
         "fields": [
           {
@@ -146,7 +146,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'e1f0ef28d9c1788bb71dec9c6ba2ea42')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'bf661654ff020afd5db2246722f68edc')"
     ]
   }
 }
