@@ -9,6 +9,9 @@ import com.mnuel.dev.notes.domain.usecases.DeleteCollectionUseCase
 import com.mnuel.dev.notes.domain.usecases.SaveCollectionUseCase
 import com.mnuel.dev.notes.model.repositories.NotebooksRepository
 import com.mnuel.dev.notes.model.room.entities.Notebook
+import com.mnuel.dev.notes.ui.screens.notebooks.OrderBy
+import com.mnuel.dev.notes.ui.screens.notebooks.OrderProperty
+import com.mnuel.dev.notes.ui.screens.notebooks.OrderState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -37,6 +40,8 @@ class CollectionsScreenViewModel @Inject constructor(
     val query = mutableStateOf("")
 
     val state: StateFlow<CollectionsScreenState> = mState
+
+    val orderState: OrderState = OrderState()
 
     init {
         viewModelScope.launch {
@@ -99,12 +104,30 @@ class CollectionsScreenViewModel @Inject constructor(
     fun search(query: String) {
         this.query.value = query
 
+        setNotes()
+    }
+
+    fun order() { setNotes() }
+
+    fun setNotes() {
+
         //When the query is blank, return all the notebooks
-        if (query.isBlank()) {
-            notebooks.value = allNotebooks
+        var mNotebooks: List<Notebook> = if (query.value.isBlank()) {
+            allNotebooks
         } else {
-            notebooks.value =
-                allNotebooks.filter { it.description.lowercase().startsWith(query.lowercase()) }
+            allNotebooks.filter { it.description.lowercase().startsWith(query.value.lowercase()) }
+        }
+
+        if(orderState.orderBy == OrderBy.Ascending) {
+            mNotebooks = when(orderState.orderProperty) {
+                OrderProperty.Alphabetically -> mNotebooks.sortedBy { it.description }
+                else -> mNotebooks.sortedBy { it.id }
+            }
+        } else {
+            mNotebooks = when(orderState.orderProperty) {
+                OrderProperty.Alphabetically -> mNotebooks.sortedByDescending { it.description }
+                else -> mNotebooks.sortedByDescending { it.id }
+            }
         }
     }
 
