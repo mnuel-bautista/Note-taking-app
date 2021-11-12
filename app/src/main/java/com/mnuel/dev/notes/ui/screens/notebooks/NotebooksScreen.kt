@@ -38,10 +38,12 @@ data class Notebook(
 @Composable
 fun NotebooksScreen(
     notebooks: List<com.mnuel.dev.notes.model.room.entities.Notebook>,
+    orderState: OrderState,
     onCreateNotebook: (notebook: String) -> Unit,
     query: String,
     onSearch: (query: String) -> Unit,
     onBack: () -> Unit,
+    onSort: () -> Unit = {},
 ) {
 
     var dialogVisible by remember { mutableStateOf(false) }
@@ -59,10 +61,19 @@ fun NotebooksScreen(
         )
     }
 
+    //Side effect for showing the bottom dialog when OrderState.visible is true
+    LaunchedEffect(orderState.visible) {
+        if(orderState.visible) {
+            bottomState.show()
+        } else {
+            bottomState.hide()
+        }
+    }
+
     ModalBottomSheetLayout(
         sheetState = bottomState,
         sheetContent = {
-            OrderingDialog()
+            OrderingDialog(orderState = orderState, onAccept = onSort)
         }
     ) {
 
@@ -70,7 +81,7 @@ fun NotebooksScreen(
             topBar = {
                 AppBar(
                     onBack = onBack,
-                    onOrder = { scope.launch { bottomState.show() } }
+                    onOrder = { orderState.visible = true }
                 )
             },
             floatingActionButton = {
@@ -221,6 +232,7 @@ private fun Notebook(
 private fun NotebooksScreenPreview() {
     NotebooksScreen(
         notebooks = emptyList(),
+        orderState = OrderState(),
         onCreateNotebook = {},
         onBack = {},
         onSearch = {},

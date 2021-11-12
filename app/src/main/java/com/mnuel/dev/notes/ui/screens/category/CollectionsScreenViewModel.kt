@@ -107,7 +107,10 @@ class CollectionsScreenViewModel @Inject constructor(
         setNotes()
     }
 
-    fun order() { setNotes() }
+    fun sortNotebooks() {
+        setNotes()
+        orderState.visible = false
+    }
 
     fun setNotes() {
 
@@ -118,13 +121,13 @@ class CollectionsScreenViewModel @Inject constructor(
             allNotebooks.filter { it.description.lowercase().startsWith(query.value.lowercase()) }
         }
 
-        mNotebooks = if(orderState.orderBy == OrderBy.Ascending) {
-            when(orderState.orderProperty) {
+        mNotebooks = if (orderState.orderBy == OrderBy.Ascending) {
+            when (orderState.orderProperty) {
                 OrderProperty.Alphabetically -> mNotebooks.sortedBy { it.description }
                 else -> mNotebooks.sortedBy { it.id }
             }
         } else {
-            when(orderState.orderProperty) {
+            when (orderState.orderProperty) {
                 OrderProperty.Alphabetically -> mNotebooks.sortedByDescending { it.description }
                 else -> mNotebooks.sortedByDescending { it.id }
             }

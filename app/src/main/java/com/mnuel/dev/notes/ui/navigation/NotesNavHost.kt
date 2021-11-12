@@ -167,12 +167,14 @@ fun NotesNavHost(
 
             NotebooksScreen(
                 notebooks = uiState.notebooks,
+                orderState = viewModel.orderState,
                 onCreateNotebook = { name ->
                     viewModel.createNotebook(name)
                 },
                 onBack = { navController.popBackStack() },
                 query = query,
-                onSearch = {query ->  viewModel.search(query)}
+                onSearch = { query -> viewModel.search(query) },
+                onSort = { viewModel.sortNotebooks() }
             )
         }
 

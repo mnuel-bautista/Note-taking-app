@@ -6,13 +6,13 @@ import androidx.compose.runtime.setValue
 
 class OrderState {
 
-    val orderProperty by mutableStateOf(OrderProperty.CreationDate)
+    var orderProperty by mutableStateOf(OrderProperty.CreationDate)
 
-    val orderBy by mutableStateOf(OrderBy.Descending)
+    var orderBy by mutableStateOf(OrderBy.Descending)
 
     var dialogContent by mutableStateOf(DialogContent.SelectedOptions)
 
-    val visible by mutableStateOf(false)
+    var visible by mutableStateOf(false)
 }
 
 enum class DialogContent {
