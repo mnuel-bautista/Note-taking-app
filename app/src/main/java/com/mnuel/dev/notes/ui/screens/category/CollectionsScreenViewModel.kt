@@ -118,17 +118,19 @@ class CollectionsScreenViewModel @Inject constructor(
             allNotebooks.filter { it.description.lowercase().startsWith(query.value.lowercase()) }
         }
 
-        if(orderState.orderBy == OrderBy.Ascending) {
-            mNotebooks = when(orderState.orderProperty) {
+        mNotebooks = if(orderState.orderBy == OrderBy.Ascending) {
+            when(orderState.orderProperty) {
                 OrderProperty.Alphabetically -> mNotebooks.sortedBy { it.description }
                 else -> mNotebooks.sortedBy { it.id }
             }
         } else {
-            mNotebooks = when(orderState.orderProperty) {
+            when(orderState.orderProperty) {
                 OrderProperty.Alphabetically -> mNotebooks.sortedByDescending { it.description }
                 else -> mNotebooks.sortedByDescending { it.id }
             }
         }
+
+        notebooks.value = mNotebooks
     }
 
 }
