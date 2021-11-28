@@ -1,5 +1,6 @@
 package com.mnuel.dev.notes.ui.screens.notebooks
 
+import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
 import androidx.compose.runtime.Composable
@@ -19,10 +20,19 @@ fun NotebookDialog(
     onAccept: (notebook: String) -> Unit,
     onCancel: () -> Unit,
 ) {
+
+    var showError by remember { mutableStateOf(false) }
+
     Dialog(onDismissRequest = onDismiss) {
         DialogContent(
-            onAccept,
+            onAccept = { notebook ->
+                if (notebook.isBlank()) {
+                    showError = true
+                } else onAccept(notebook)
+            },
             onCancel,
+            showError = showError,
+            onShowError = { showError  = it }
         )
     }
 }
@@ -31,13 +41,17 @@ fun NotebookDialog(
 private fun DialogContent(
     onAccept: (notebook: String) -> Unit,
     onCancel: () -> Unit,
+    showError: Boolean = false,
+    onShowError: (Boolean) -> Unit,
 ) {
 
     var notebook by remember { mutableStateOf("") }
 
     Surface {
         Column(
-            modifier = Modifier.width(280.dp)
+            modifier = Modifier
+                .wrapContentHeight()
+                .animateContentSize()
                 .padding(top = 16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
@@ -46,17 +60,33 @@ private fun DialogContent(
                 text = "New Notebook",
                 style = MaterialTheme.typography.subtitle1
             )
-            TextField(
-                modifier = Modifier.padding(horizontal = 16.dp),
-                value = notebook,
-                onValueChange = { notebook = it },
-                label = { Text(text = "Notebook") },
-            )
+            Column {
+                TextField(
+                    modifier = Modifier.padding(horizontal = 16.dp),
+                    value = notebook,
+                    onValueChange = {
+                        notebook = it
+                        onShowError(false)
+                    },
+                    label = { Text(text = "Notebook") },
+                    isError = showError,
+                )
+                if (showError) {
+                    Text(
+                        modifier = Modifier.padding(start = 16.dp),
+                        text = "You must set a name for notebook",
+                        style = MaterialTheme.typography.caption,
+                        color = MaterialTheme.colors.error,
+                    )
+                }
+            }
 
             Row(
-                Modifier.fillMaxWidth()
+                Modifier
+                    .fillMaxWidth()
                     .wrapContentWidth(Alignment.End)
-                    .padding(horizontal = 8.dp),
+                    .padding(horizontal = 8.dp)
+                    .padding(bottom = 8.dp),
             ) {
                 TextButton(onClick = onCancel) {
                     Text(text = "CANCEL")
@@ -72,5 +102,5 @@ private fun DialogContent(
 @Preview
 @Composable
 private fun DialogPreview() {
-    DialogContent({}, {})
+    DialogContent({}, {}, onShowError = {})
 }
