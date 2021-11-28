@@ -1,7 +1,8 @@
 package com.mnuel.dev.notes.ui.screens.category
 
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.ui.text.toLowerCase
+import androidx.compose.runtime.setValue
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -92,6 +93,20 @@ class CollectionsScreenViewModel @Inject constructor(
         }
     }
 
+    /**
+     * Deletes selected notebooks
+     * */
+    fun deleteSelected() {
+        viewModelScope.launch {
+            val selected = state.value.selected
+            val notebooks = state.value.notebooks
+            selected.forEach { id ->
+                val notebook = notebooks.find { notebook -> notebook.id == id }
+                notebook?.let { repository.delete(notebook) }
+            }
+        }
+    }
+
     fun createNotebook(name: String) {
         viewModelScope.launch {
             repository.insert(Notebook(id = 0, description = name))
@@ -145,4 +160,30 @@ data class CollectionsScreenState(
     val notebooks: List<Notebook> = emptyList(),
     val selection: Notebook? = null,
     val isSelectionScreen: Boolean = false,
-)
+) {
+
+    var selected by mutableStateOf(emptySet<Int>())
+        private set
+
+    val selectionCount: Int
+        get() {
+            return selected.size
+        }
+
+    fun isSelected(notebookId: Int): Boolean {
+        return selected.contains(notebookId)
+    }
+
+    fun selectNotebook(notebookId: Int) {
+        selected = selected.toMutableSet().apply { add(notebookId) }
+    }
+
+    fun unselectNotebook(notebookId: Int) {
+        selected = selected.toMutableSet().apply { remove(notebookId) }
+    }
+
+    fun unselectAll() {
+        selected = selected.toMutableSet().apply { clear() }
+    }
+
+}

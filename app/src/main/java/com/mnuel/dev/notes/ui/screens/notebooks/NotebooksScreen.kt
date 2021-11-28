@@ -1,7 +1,10 @@
 package com.mnuel.dev.notes.ui.screens.notebooks
 
+import android.view.RoundedCorner
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.GridCells
 import androidx.compose.foundation.lazy.LazyVerticalGrid
@@ -10,9 +13,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Add
-import androidx.compose.material.icons.outlined.ArrowBack
-import androidx.compose.material.icons.outlined.Sort
+import androidx.compose.material.icons.outlined.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -27,6 +28,7 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.mnuel.dev.notes.R
+import com.mnuel.dev.notes.ui.screens.category.CollectionsScreenState
 import kotlinx.coroutines.launch
 
 data class Notebook(
@@ -38,17 +40,18 @@ data class Notebook(
 @Composable
 fun NotebooksScreen(
     notebooks: List<com.mnuel.dev.notes.model.room.entities.Notebook>,
+    uiState: CollectionsScreenState, //Change the name of the class
     orderState: OrderState,
     onCreateNotebook: (notebook: String) -> Unit,
     query: String,
     onSearch: (query: String) -> Unit,
     onBack: () -> Unit,
     onSort: () -> Unit = {},
+    onDelete: () -> Unit = {},
 ) {
 
     var dialogVisible by remember { mutableStateOf(false) }
     val bottomState = rememberModalBottomSheetState(initialValue = ModalBottomSheetValue.Hidden)
-    val scope = rememberCoroutineScope()
 
     if (dialogVisible) {
         NotebookDialog(
@@ -63,7 +66,7 @@ fun NotebooksScreen(
 
     //Side effect for showing the bottom dialog when OrderState.visible is true
     LaunchedEffect(orderState.visible) {
-        if(orderState.visible) {
+        if (orderState.visible) {
             bottomState.show()
         } else {
             bottomState.hide()
@@ -81,7 +84,10 @@ fun NotebooksScreen(
             topBar = {
                 AppBar(
                     onBack = onBack,
-                    onOrder = { orderState.visible = true }
+                    onOrder = { orderState.visible = true },
+                    isContext = uiState.selectionCount > 0,
+                    onCloseContextual = { uiState.unselectAll() },
+                    onDelete = onDelete,
                 )
             },
             floatingActionButton = {
@@ -104,7 +110,21 @@ fun NotebooksScreen(
                     verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
                     items(notebooks) { notebook ->
-                        Notebook(name = notebook.description)
+                        Notebook(
+                            modifier = Modifier.combinedClickable(
+                                onLongClick = { uiState.selectNotebook(notebook.id) }
+                            ) {
+                                if (uiState.selectionCount > 0) {
+                                    if(uiState.isSelected(notebook.id)) {
+                                        uiState.unselectNotebook(notebook.id)
+                                    } else {
+                                        uiState.selectNotebook(notebook.id)
+                                    }
+                                }
+                            },
+                            name = notebook.description,
+                            isSelected = uiState.isSelected(notebook.id)
+                        )
                     }
                 }
             }
@@ -112,31 +132,57 @@ fun NotebooksScreen(
     }
 }
 
+
+/**
+ *
+ * @param isContext When search bar should be contextual
+ * */
 @Composable
 private fun AppBar(
     onOrder: () -> Unit,
     onBack: () -> Unit,
+    isContext: Boolean = false,
+    onCloseContextual: () -> Unit,
+    onDelete: () -> Unit,
 ) {
     Column(
         modifier = Modifier
             .height(92.dp)
             .fillMaxWidth()
     ) {
-        TopAppBar(
-            navigationIcon = {
-                IconButton(onClick = onBack) {
-                    Icon(Icons.Outlined.ArrowBack, contentDescription = null)
-                }
-            },
-            title = { },
-            actions = {
-                IconButton(onClick = onOrder) {
-                    Icon(imageVector = Icons.Outlined.Sort, contentDescription = "")
-                }
-            },
-            backgroundColor = MaterialTheme.colors.background,
-            elevation = 0.dp
-        )
+        if (isContext) {
+            TopAppBar(
+                navigationIcon = {
+                    IconButton(onClick = onCloseContextual) {
+                        Icon(Icons.Outlined.Close, contentDescription = null)
+                    }
+                },
+                title = { },
+                actions = {
+                    IconButton(onClick = onDelete) {
+                        Icon(imageVector = Icons.Outlined.Delete, contentDescription = "")
+                    }
+                },
+                backgroundColor = MaterialTheme.colors.background,
+                elevation = 0.dp
+            )
+        } else {
+            TopAppBar(
+                navigationIcon = {
+                    IconButton(onClick = onBack) {
+                        Icon(Icons.Outlined.ArrowBack, contentDescription = null)
+                    }
+                },
+                title = { },
+                actions = {
+                    IconButton(onClick = onOrder) {
+                        Icon(imageVector = Icons.Outlined.Sort, contentDescription = "")
+                    }
+                },
+                backgroundColor = MaterialTheme.colors.background,
+                elevation = 0.dp
+            )
+        }
 
         Text(
             modifier = Modifier.padding(start = 16.dp),
@@ -206,11 +252,16 @@ private fun SearchBar(
 private fun Notebook(
     modifier: Modifier = Modifier,
     name: String,
+    isSelected: Boolean = false,
 ) {
+
+    val selectedModifier = Modifier.border(width = 1.dp, color = MaterialTheme.colors.primary)
+
     Column(
         modifier = modifier
             .width(184.dp)
             .height(76.dp)
+            .then(if(isSelected) selectedModifier else Modifier)
             .background(color = Color(0xffE8D9FC).copy(alpha = 0.12f))
             .padding(start = 16.dp, top = 16.dp),
     ) {
@@ -233,6 +284,7 @@ private fun NotebooksScreenPreview() {
     NotebooksScreen(
         notebooks = emptyList(),
         orderState = OrderState(),
+        uiState = CollectionsScreenState(),
         onCreateNotebook = {},
         onBack = {},
         onSearch = {},
